@@ -15,6 +15,7 @@ contract Certificate {
     Institution public institution;
     Degree public degree;
     State public status = State.requested;
+    Application application;
     event Request(address sender);
     event Reject(address sender);
     event Approve(address sender);
@@ -30,17 +31,19 @@ contract Certificate {
         emit Request(msg.sender);
     }
 
-    function reject() public {
+    function reject() public payable {
         if (editable()) {
             status = State.rejected;
             emit Reject(msg.sender);
         }
     }
 
-    function approve() public {
+    function approve() public payable {
         if (editable() && institution.allowed(msg.sender)) {
             status = State.approved;
             faculty.addCertificate(this);
+            institution.addCertificate(this);
+            application.removeCertificate(this);
             emit Approve(msg.sender);
         }
     }
@@ -54,10 +57,6 @@ contract Certificate {
 contract Faculty {
     uint256 id;
     string public name;
-    uint16 public yearEnded;
-    string public qualificationDescription;
-    uint16 public teachingProductivity;
-    uint16 public productivityPercentage;
     address public owner;
     Certificate[] public certificates;
     Institution public currentInstitution;
@@ -74,23 +73,13 @@ contract Faculty {
         owner = _owner;
     }
 
-    function update(
-        string memory _name,
-        uint16 _yearEnded,
-        string memory _qualificationDescription,
-        uint16 _teachingProductivity,
-        uint16 _productivityPercentage
-    ) public {
+    function update(string memory _name) public payable {
         if (allowed(msg.sender)) {
             name = _name;
-            yearEnded = _yearEnded;
-            qualificationDescription = _qualificationDescription;
-            teachingProductivity = _teachingProductivity;
-            productivityPercentage = _productivityPercentage;
         }
     }
 
-    function assignInstitution(address _institutionAddress) public {
+    function assignInstitution(address _institutionAddress) public payable {
         Institution _institution = Institution(_institutionAddress);
         if (_institution.allowed(msg.sender)) {
             currentInstitution = _institution;
@@ -101,7 +90,7 @@ contract Faculty {
         return _address == owner;
     }
 
-    function addCertificate(Certificate _certificate) public {
+    function addCertificate(Certificate _certificate) public payable {
         if (_certificate.institution().allowed(msg.sender)) {
             certificates.push(_certificate);
             emit CertificateAdded(msg.sender, _certificate);
@@ -116,7 +105,12 @@ contract Institution {
         mapping(uint256 => Faculty) faculties;
         uint256 nextFacultyId;
     }
-
+    struct StaffMember {
+        uint256 id;
+        string name;
+        uint256 departmentId;
+        bool active;
+    }
     struct PublicDepartment {
         uint256 id;
         string name;
@@ -125,11 +119,17 @@ contract Institution {
     uint256 public id;
     string public name;
     address public owner;
+
+    Certificate[] public issuedCertificates;
+
     address[] public allowedModifiers;
     mapping(address => bool) allowedModifiersMap;
 
     mapping(uint256 => Department) departments;
     uint256 nextDepartmentId = 1;
+
+    mapping(uint256 => StaffMember) staffMembers;
+    uint256 nextStaffMembersId = 1;
 
     mapping(uint256 => Certificate) certificates;
     uint256 nextCertificateId = 0;
@@ -149,13 +149,13 @@ contract Institution {
         allowedModifiersMap[sender] = true;
     }
 
-    function update(string memory _name) public {
+    function update(string memory _name) public payable {
         if (allowed(msg.sender)) {
             name = _name;
         }
     }
 
-    function createDepartment(string memory _name) public {
+    function createDepartment(string memory _name) public payable {
         if (allowed(msg.sender)) {
             uint256 _nextDepartmentId = nextDepartmentId++;
             Department storage _department = departments[_nextDepartmentId];
@@ -167,6 +167,7 @@ contract Institution {
 
     function updateDepartment(uint256 _departmentId, string memory _name)
         public
+        payable
     {
         if (allowed(msg.sender)) {
             Department storage _department = departments[_departmentId];
@@ -192,10 +193,10 @@ contract Institution {
         returns (PublicDepartment[10] memory)
     {
         PublicDepartment[10] memory list;
-        for (uint256 i = 1; i + _from < nextDepartmentId; i++) {
-            list[i - 1] = PublicDepartment({
-                id: departments[i].id,
-                name: departments[i].name
+        for (uint256 i = 0; i < 10; i++) {
+            list[i] = PublicDepartment({
+                id: departments[i + _from + 1].id,
+                name: departments[i + _from + 1].name
             });
         }
         return list;
@@ -205,19 +206,86 @@ contract Institution {
         return nextDepartmentId - 1;
     }
 
+    function staffMember(uint256 _from)
+        public
+        view
+        returns (StaffMember memory)
+    {
+        return staffMembers[_from];
+    }
+
+    function listStaffMembers(uint256 _from)
+        public
+        view
+        returns (StaffMember[10] memory)
+    {
+        return listStaffMembers(_from, false);
+    }
+
+    function listStaffMembers(uint256 _from, bool skipInactive)
+        public
+        view
+        returns (StaffMember[10] memory)
+    {
+        StaffMember[10] memory list;
+        for (uint256 i = 0; i < 10; i++) {
+            if (skipInactive && !staffMembers[i + _from + 1].active) {
+                _from++;
+                i--;
+            } else if (nextStaffMembersId < i + _from + 1) {
+                i = 10;
+            } else {
+                list[i] = staffMembers[i + _from + 1];
+            }
+        }
+        return list;
+    }
+
+    function staffMembersLength() public view returns (uint256) {
+        return nextStaffMembersId - 1;
+    }
+
+    function createStaffMember(string memory _name, uint256 _departmentId)
+        public
+        payable
+    {
+        if (allowed(msg.sender)) {
+            uint256 _nextStaffMemberId = nextStaffMembersId++;
+            StaffMember storage _staffMember = staffMembers[_nextStaffMemberId];
+            _staffMember.id = _nextStaffMemberId;
+            _staffMember.name = _name;
+            _staffMember.departmentId = _departmentId;
+            _staffMember.active = true;
+        }
+    }
+
+    function updateStaffMember(
+        uint256 _staffMemberId,
+        string memory _name,
+        uint256 _departmentId,
+        bool _active
+    ) public payable {
+        if (allowed(msg.sender)) {
+            StaffMember storage _staffMember = staffMembers[_staffMemberId];
+            _staffMember.name = _name;
+            _staffMember.departmentId = _departmentId;
+            _staffMember.active = _active;
+        }
+    }
+
     function listModifiers(uint256 _from)
         public
         view
         returns (address[10] memory)
     {
         address[10] memory list;
-        for (uint256 i = 0; i + _from < allowedModifiers.length; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             list[i] = allowedModifiers[i + _from];
         }
         return list;
     }
 
-    function addModifier(address _modifier) public {
+    function addModifier(address _modifier) public payable {
         if (allowed(msg.sender) && !allowedModifiersMap[_modifier]) {
             allowedModifiers.push(_modifier);
             allowedModifiersMap[_modifier] = true;
@@ -225,7 +293,7 @@ contract Institution {
         }
     }
 
-    function removeModifier(address _modifier) public {
+    function removeModifier(address _modifier) public payable {
         if (allowedToRemove(msg.sender, _modifier)) {
             for (uint256 i = 0; i < allowedModifiers.length; i++) {
                 if (allowedModifiers[i] == _modifier) {
@@ -276,6 +344,16 @@ contract Institution {
             return false;
         }
     }
+
+    function addCertificate(Certificate _certificate) public payable {
+        if (
+            allowed(msg.sender) &&
+            _certificate.status() == Certificate.State.approved &&
+            _certificate.institution() == this
+        ) {
+            issuedCertificates.push(_certificate);
+        }
+    }
 }
 
 contract Application {
@@ -289,6 +367,8 @@ contract Application {
     mapping(uint256 => Faculty) facultiesByIndex;
     uint256 nextFacultyId = 0;
 
+    mapping(uint256 => Certificate[]) pendingCertificates;
+
     function createInstitution(string memory _name) public payable {
         uint256 _id = nextInstitutionId++;
         Institution _institution = new Institution(_id, _name, msg.sender);
@@ -301,7 +381,7 @@ contract Application {
         returns (Institution[10] memory)
     {
         Institution[10] memory list;
-        for (uint256 i = 0; i + _from < nextInstitutionId; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             list[i] = institutions[i + _from];
         }
         return list;
@@ -326,7 +406,7 @@ contract Application {
         returns (Faculty[10] memory)
     {
         Faculty[10] memory list;
-        for (uint256 i = 0; i + _from < nextFacultyId; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             list[i] = facultiesByIndex[i + _from];
         }
         return list;
@@ -334,5 +414,20 @@ contract Application {
 
     function facultiesLength() public view returns (uint256) {
         return nextFacultyId;
+    }
+
+    function removeCertificate(Certificate _certificate) public payable {
+        uint256 _instituionId = _certificate.institution().id();
+        Certificate[] storage _pendingCertificates =
+            pendingCertificates[_instituionId];
+        for (uint256 i = 0; i < _pendingCertificates.length; i++) {
+            if (_pendingCertificates[i] == _certificate) {
+                uint256 _lastIndex = _pendingCertificates.length - 1;
+                if (i < _lastIndex) {
+                    _pendingCertificates[i] = _pendingCertificates[_lastIndex];
+                }
+                _pendingCertificates.pop();
+            }
+        }
     }
 }
