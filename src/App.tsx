@@ -12,6 +12,7 @@ import useStore from "./Store";
 import Value from "./Components/Value";
 import FacultyPanel from "./Components/FacultyPanel";
 import Routes from "./Routes";
+import InstitutionPanel from "./Components/InstitutionPanel";
 const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
@@ -20,6 +21,7 @@ const useStyles = makeStyles((theme) => ({
     width: "100vw",
     height: "100vh",
     display: "flex",
+    flexDirection: "column",
     alignContent: "center",
     alignItems: "center",
     justifyContent: "center",
@@ -28,14 +30,32 @@ const useStyles = makeStyles((theme) => ({
 const Loading = () => {
   const classes = useStyles();
   return (
-    <div className={classes.root}>
-      <CircularProgress size={100} />
-    </div>
+    <>
+      <AppBar position="static">
+        <Toolbar></Toolbar>
+      </AppBar>
+      <Container maxWidth="lg" className={classes.root}>
+        <CircularProgress size={100} />
+      </Container>
+    </>
+  );
+};
+const EstablishConnection = () => {
+  const classes = useStyles();
+  return (
+    <>
+      <AppBar position="static">
+        <Toolbar></Toolbar>
+      </AppBar>
+      <Container maxWidth="lg" className={classes.root}>
+        <Typography>Please connect Meta Mask!</Typography>
+      </Container>
+    </>
   );
 };
 const Content = () => {
   const { account, application } = useStore((state) => ({
-    account: state.account!,
+    account: state.account,
     application: state.application!,
   }));
   const classes = useStyles();
@@ -43,9 +63,12 @@ const Content = () => {
     <>
       <AppBar position="static">
         <Toolbar>
+          <Typography variant="h6" className={classes.title}>
+            Photos
+          </Typography>
           <Tooltip title={account as string}>
             <Typography variant="h6" className={classes.title}>
-              Your address is {(account as string).slice(0, 10)}...
+              Your address is {(account as string).slice(0, 15)}...
             </Typography>
           </Tooltip>
         </Toolbar>
@@ -66,6 +89,9 @@ const Content = () => {
                   {(faculty) => <FacultyPanel address={faculty} />}
                 </Value>
               </Box>
+              <Box margin={1} padding={1}>
+                <InstitutionPanel />
+              </Box>
             </Grid>
           </Grid>
         </Box>
@@ -74,7 +100,13 @@ const Content = () => {
   );
 };
 const App = () => {
-  const { initialized } = useStore();
-  return initialized ? <Content /> : <Loading />;
+  const { initialized, account, application } = useStore();
+  if (typeof account === "string" && account.length > 0 && application) {
+    return <Content />;
+  } else if (initialized && !account) {
+    return <EstablishConnection />;
+  } else {
+    return <Loading />;
+  }
 };
 export default App;

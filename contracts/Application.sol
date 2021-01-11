@@ -280,9 +280,17 @@ contract Institution {
     {
         address[10] memory list;
         for (uint256 i = 0; i < 10; i++) {
-            list[i] = allowedModifiers[i + _from];
+            if (i + _from >= allowedModifiers.length) {
+                i = 10;
+            } else {
+                list[i] = allowedModifiers[i + _from];
+            }
         }
         return list;
+    }
+
+    function modifiersLength() public view returns (uint256) {
+        return allowedModifiers.length;
     }
 
     function addModifier(address _modifier) public payable {

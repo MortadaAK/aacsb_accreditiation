@@ -47,21 +47,17 @@ const useStyles = makeStyles((theme) => ({
 const Panel = ({ address }: { address: string }) => {
   const classes = useStyles();
   const [name, setName] = useState("");
-  const {
-    faculty: getFaculty,
-    institution: getInstition,
-    account,
-  } = useStore();
+  const { institution: getInstitution, account } = useStore();
   return (
-    <Value value={getFaculty} params={[address]}>
-      {(faculty) => {
-        if (faculty) {
+    <Value value={getInstitution} params={[address]}>
+      {(institution) => {
+        if (institution) {
           return (
             <Card className={classes.root}>
               <CardHeader
                 titleTypographyProps={{ component: "span" }}
                 title={
-                  <Value topic="Faculty" value={faculty.name}>
+                  <Value topic="Institution" value={institution.name}>
                     {(name) => {
                       setName(name!);
                       return <>{name}</>;
@@ -69,36 +65,16 @@ const Panel = ({ address }: { address: string }) => {
                   </Value>
                 }
               />
-              <CardContent>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  component="div"
-                >
-                  <Value value={faculty.currentInstitution}>
-                    {(address) => (
-                      <Value
-                        value={
-                          address ? () => getInstition(address) : undefined
-                        }
-                      >
-                        {(instition) => (
-                          <Value value={instition?.name}>
-                            {(name) => {
-                              return <>Institution: {name}</>;
-                            }}
-                          </Value>
-                        )}
-                      </Value>
-                    )}
-                  </Value>
-                </Typography>
-              </CardContent>
-              <Value value={faculty.allowed} params={[account]}>
+              <CardContent></CardContent>
+              <Value value={institution.allowed} params={[account]}>
                 {(allowed) =>
                   allowed ? (
                     <CardActions disableSpacing>
-                      <Form name={name} title="Edit" action={faculty.update} />
+                      <Form
+                        name={name}
+                        title="Edit"
+                        action={institution.update}
+                      />
                     </CardActions>
                   ) : null
                 }
@@ -112,28 +88,25 @@ const Panel = ({ address }: { address: string }) => {
     </Value>
   );
 };
+
 const Form = ({
   title,
   action,
-  name: initialName = "",
 }: {
   title: string;
   name?: string;
   action: (name: string, opts: any) => Promise<any>;
 }) => {
   const [visible, setVisible] = useState(false);
-  const [name, setName] = useState(initialName);
+  const [name, setName] = useState("");
   const { account, notify } = useStore();
-  useEffect(() => {
-    setName(initialName);
-  }, [initialName]);
   const handleClose = () => {
     setVisible(false);
   };
   const handleSave = () => {
     action(name, { from: account }).then(() => {
       handleClose();
-      notify("myFaculty");
+      notify("myInstitution");
     });
   };
   return (
@@ -168,16 +141,14 @@ const Form = ({
 };
 const Register = () => {
   const { application } = useStore();
-
   return (
-    <Form title="Register as Faculty" action={application?.createFaculty!} />
+    <Form
+      title="Register Institution"
+      action={application?.createInstitution!}
+    />
   );
 };
-const FacultyPanel = ({ address }: { address: string | undefined }) => {
-  if (address) {
-    return <Panel address={address} />;
-  } else {
-    return <Register />;
-  }
+const InstitutionPanel = () => {
+  return <Register />;
 };
-export default FacultyPanel;
+export default InstitutionPanel;

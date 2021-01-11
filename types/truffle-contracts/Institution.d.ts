@@ -184,6 +184,8 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
     txDetails?: Truffle.TransactionDetails
   ): Promise<string[]>;
 
+  modifiersLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
   addModifier: {
     (_modifier: string, txDetails?: Truffle.TransactionDetails): Promise<
       Truffle.TransactionResponse<AllEvents>
@@ -402,6 +404,8 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
       _from: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string[]>;
+
+    modifiersLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
 
     addModifier: {
       (_modifier: string, txDetails?: Truffle.TransactionDetails): Promise<

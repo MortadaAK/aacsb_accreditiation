@@ -6,6 +6,7 @@ import CertificateStorage from "./contracts/Certificate.json";
 import create from "zustand";
 import {
   ApplicationInstance,
+  CertificateInstance,
   FacultyInstance,
   InstitutionInstance,
 } from "../types/truffle-contracts";
@@ -30,7 +31,8 @@ type Store = {
   account: string;
   initialized: boolean;
   faculty: (address: string) => Promise<FacultyInstance>;
-  instition: (address: string) => Promise<InstitutionInstance>;
+  institution: (address: string) => Promise<InstitutionInstance>;
+  certificate: (address: string) => Promise<CertificateInstance>;
   notify: (topic: string, params?: any[]) => void;
   notifications: Record<string, number>;
   notification: (topic: string, params?: any[]) => number;
@@ -63,9 +65,15 @@ const useStore = create<Store>((set, get) => {
     faculty: (address) => {
       return getContractInstance<FacultyInstance>(FacultyStorage, address);
     },
-    instition: (address) => {
+    institution: (address) => {
       return getContractInstance<InstitutionInstance>(
         InstitutionStorage,
+        address
+      );
+    },
+    certificate: (address) => {
+      return getContractInstance<CertificateInstance>(
+        CertificateStorage,
         address
       );
     },
