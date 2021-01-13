@@ -24,6 +24,8 @@ import Paginate from "../Components/Paginate";
 import Value from "../Components/Value";
 import useStore from "../Store";
 const ModifierBuilder = (address: string) => Promise.resolve(address);
+const DepartmentBuilder = (department: { id: BN; name: string }) =>
+  Promise.resolve(department);
 const Space = () => <div style={{ flexGrow: 1 }}></div>;
 
 const AuthorizedAddresses = ({
@@ -53,7 +55,7 @@ const AuthorizedAddresses = ({
 
   return (
     <>
-      <AppBar position="relative">
+      <AppBar position="relative" color="secondary">
         <Toolbar>
           <Typography>Authorized Addresses</Typography>
           <Space />
@@ -131,6 +133,87 @@ const AuthorizedAddresses = ({
     </>
   );
 };
+
+const StaffMembers = ({
+  institution,
+}: {
+  institution: InstitutionInstance;
+}) => {
+  const { account } = useStore();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [c, render] = useState(0);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => {
+    setOpen(false);
+    setName("");
+  };
+  const handleSave = async () => {
+    await institution.createStaffMember(name, { from: account });
+    render(c + 1);
+    handleClose();
+  };
+  return (
+    <>
+      <AppBar position="relative" color="secondary">
+        <Toolbar>
+          <Typography>Staff Members</Typography>
+          <Space />
+          <Value value={institution.allowed} params={[account]}>
+            {(allowed) =>
+              allowed ? (
+                <IconButton
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  color="inherit"
+                  onClick={handleOpen}
+                >
+                  <Add />
+                </IconButton>
+              ) : null
+            }
+          </Value>
+        </Toolbar>
+      </AppBar>
+      <Paginate
+        caller={institution.listStaffMembers}
+        length={institution.staffMembersLength}
+        contractBuilder={DepartmentBuilder}
+        additionalParams={[false]}
+      >
+        {(department) => (
+          <ListItemText>
+            <Typography>{department.name}</Typography>
+          </ListItemText>
+        )}
+      </Paginate>
+      {open && (
+        <Dialog
+          maxWidth="md"
+          onClose={handleClose}
+          aria-labelledby="customized-dialog-title"
+          open={open}
+        >
+          <DialogContent dividers>
+            <TextField
+              label="Name"
+              value={name}
+              onChange={({ target: { value } }) => {
+                setName(value);
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button autoFocus onClick={handleSave} color="primary">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </>
+  );
+};
 const Institution = () => {
   const { address } = useParams<{ address: string }>();
   const { institution } = useStore();
@@ -140,33 +223,33 @@ const Institution = () => {
         institution ? (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography component="div" variant="h3">
-                <Value value={institution.name} />
-              </Typography>
+              <AppBar position="relative">
+                <Toolbar>
+                  <Typography>
+                    <Value value={institution.name} />
+                  </Typography>
+                </Toolbar>
+              </AppBar>
             </Grid>
             <Grid item xs={12} md={6}>
-              <AppBar position="relative">
+              <AppBar position="relative" color="secondary">
                 <Toolbar>
                   <Typography>Faculties</Typography>
                 </Toolbar>
               </AppBar>
             </Grid>
             <Grid item xs={12} md={6}>
-              <AppBar position="relative">
-                <Toolbar>
-                  <Typography>Departments</Typography>
-                </Toolbar>
-              </AppBar>
+              <StaffMembers institution={institution} />
             </Grid>
             <Grid item xs={12} md={6}>
-              <AppBar position="relative">
+              <AppBar position="relative" color="secondary">
                 <Toolbar>
                   <Typography>Issued Certificates</Typography>
                 </Toolbar>
               </AppBar>
             </Grid>
             <Grid item xs={12} md={6}>
-              <AppBar position="relative">
+              <AppBar position="relative" color="secondary">
                 <Toolbar>
                   <Typography>Pending Certificates</Typography>
                 </Toolbar>

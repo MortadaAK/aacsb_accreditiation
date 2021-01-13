@@ -9,7 +9,16 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
 }));
-const theme = createMuiTheme({});
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#3f51b5",
+    },
+    secondary: {
+      main: "#00b0ff",
+    },
+  },
+});
 const Root = () => {
   const classes = useStyles();
   return (

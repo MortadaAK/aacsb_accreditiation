@@ -181,75 +181,26 @@ contract("Institution", async (accounts) => {
     assert.notEqual("New Name", name);
   });
 
-  it("creates department", async () => {
-    await institution.createDepartment("Business", {
-      from: accounts[0],
-    });
-    let department = await institution.department(1);
-    assert.equal(department.id, 1);
-    assert.equal(department.name, "Business");
-  });
-
-  it("updates department", async () => {
-    await institution.updateDepartment(1, "Business Department", {
-      from: accounts[0],
-    });
-    let department = await institution.department(1);
-    assert.equal(department.id, 1);
-    assert.equal(department.name, "Business Department");
-  });
-
-  it("list department", async () => {
-    await institution.createDepartment("Computer Science", {
-      from: accounts[0],
-    });
-    assert.equal(2, await institution.departmentsLength());
-    let departments = await institution.listDepartments(0);
-    assert.equal(departments[0].id, 1);
-    assert.equal(departments[1].id, 2);
-    assert.equal(departments[2].id, 0);
-    assert.equal(departments[3].id, 0);
-    assert.equal(departments[4].id, 0);
-    assert.equal(departments[5].id, 0);
-    assert.equal(departments[6].id, 0);
-    assert.equal(departments[7].id, 0);
-    assert.equal(departments[8].id, 0);
-    assert.equal(departments[9].id, 0);
-  });
-
   it("creates Staff Member", async () => {
-    let [{ id: departmentId }] = await institution.listDepartments(0);
     assert.equal(0, await institution.staffMembersLength());
-    await institution.createStaffMember("Ahmed", departmentId, {
+    await institution.createStaffMember("Ahmed", {
       from: accounts[0],
     });
     assert.equal(1, await institution.staffMembersLength());
     let staffMember = await institution.staffMember(1);
     assert.equal(staffMember.name, "Ahmed");
-    assert.equal(staffMember.departmentId, departmentId);
     assert.equal(staffMember.active, true);
   });
 
   it("update Staff Member", async () => {
-    let [
-      { id: departmentId1 },
-      { id: departmentId2 },
-    ] = await institution.listDepartments(0);
     // we are going to use the previously created staff member
     assert.equal(1, await institution.staffMembersLength());
     let staffMember = await institution.staffMember(1);
     assert.equal(staffMember.name, "Ahmed");
-    assert.equal(staffMember.departmentId, departmentId1);
     assert.equal(staffMember.active, true);
-    await institution.updateStaffMember(
-      staffMember.id,
-      "Ahmed Ali",
-      departmentId2,
-      false
-    );
+    await institution.updateStaffMember(staffMember.id, "Ahmed Ali", false);
     staffMember = await institution.staffMember(1);
     assert.equal(staffMember.name, "Ahmed Ali");
-    assert.equal(staffMember.departmentId, departmentId2);
     assert.equal(staffMember.active, false);
   });
 
@@ -260,6 +211,7 @@ contract("Institution", async (accounts) => {
   });
 
   it("should skip inactive staff member", async () => {
+    assert.equal(1, await institution.staffMembersLength());
     const staffMembers = await institution.listStaffMembers(0, true);
     assert.equal(staffMembers.length, 10);
     assert.equal(staffMembers[0].id, 0);

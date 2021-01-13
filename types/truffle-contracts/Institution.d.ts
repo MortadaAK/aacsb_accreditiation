@@ -68,7 +68,20 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
-  createDepartment: {
+  staffMember(
+    _from: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<{ id: BN; name: string; active: boolean }>;
+
+  listStaffMembers(
+    _from: number | BN | string,
+    skipInactive: boolean,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<{ id: BN; name: string; active: boolean }[]>;
+
+  staffMembersLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+  createStaffMember: {
     (_name: string, txDetails?: Truffle.TransactionDetails): Promise<
       Truffle.TransactionResponse<AllEvents>
     >;
@@ -83,97 +96,28 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
-  updateDepartment: {
-    (
-      _departmentId: number | BN | string,
-      _name: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<Truffle.TransactionResponse<AllEvents>>;
-    call(
-      _departmentId: number | BN | string,
-      _name: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<void>;
-    sendTransaction(
-      _departmentId: number | BN | string,
-      _name: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      _departmentId: number | BN | string,
-      _name: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
-  department(
-    _from: number | BN | string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<{ id: BN; name: string }>;
-
-  listDepartments(
-    _from: number | BN | string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<{ id: BN; name: string }[]>;
-
-  departmentsLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-  staffMember(
-    _from: number | BN | string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<{ id: BN; name: string; departmentId: BN; active: boolean }>;
-
-  staffMembersLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-  createStaffMember: {
-    (
-      _name: string,
-      _departmentId: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<Truffle.TransactionResponse<AllEvents>>;
-    call(
-      _name: string,
-      _departmentId: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<void>;
-    sendTransaction(
-      _name: string,
-      _departmentId: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      _name: string,
-      _departmentId: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
   updateStaffMember: {
     (
       _staffMemberId: number | BN | string,
       _name: string,
-      _departmentId: number | BN | string,
       _active: boolean,
       txDetails?: Truffle.TransactionDetails
     ): Promise<Truffle.TransactionResponse<AllEvents>>;
     call(
       _staffMemberId: number | BN | string,
       _name: string,
-      _departmentId: number | BN | string,
       _active: boolean,
       txDetails?: Truffle.TransactionDetails
     ): Promise<void>;
     sendTransaction(
       _staffMemberId: number | BN | string,
       _name: string,
-      _departmentId: number | BN | string,
       _active: boolean,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
       _staffMemberId: number | BN | string,
       _name: string,
-      _departmentId: number | BN | string,
       _active: boolean,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
@@ -286,7 +230,20 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
       ): Promise<number>;
     };
 
-    createDepartment: {
+    staffMember(
+      _from: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<{ id: BN; name: string; active: boolean }>;
+
+    listStaffMembers(
+      _from: number | BN | string,
+      skipInactive: boolean,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<{ id: BN; name: string; active: boolean }[]>;
+
+    staffMembersLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+    createStaffMember: {
       (_name: string, txDetails?: Truffle.TransactionDetails): Promise<
         Truffle.TransactionResponse<AllEvents>
       >;
@@ -304,97 +261,28 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
       ): Promise<number>;
     };
 
-    updateDepartment: {
-      (
-        _departmentId: number | BN | string,
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<Truffle.TransactionResponse<AllEvents>>;
-      call(
-        _departmentId: number | BN | string,
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<void>;
-      sendTransaction(
-        _departmentId: number | BN | string,
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<string>;
-      estimateGas(
-        _departmentId: number | BN | string,
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<number>;
-    };
-
-    department(
-      _from: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<{ id: BN; name: string }>;
-
-    listDepartments(
-      _from: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<{ id: BN; name: string }[]>;
-
-    departmentsLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-    staffMember(
-      _from: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<{ id: BN; name: string; departmentId: BN; active: boolean }>;
-
-    staffMembersLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-    createStaffMember: {
-      (
-        _name: string,
-        _departmentId: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<Truffle.TransactionResponse<AllEvents>>;
-      call(
-        _name: string,
-        _departmentId: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<void>;
-      sendTransaction(
-        _name: string,
-        _departmentId: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<string>;
-      estimateGas(
-        _name: string,
-        _departmentId: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<number>;
-    };
-
     updateStaffMember: {
       (
         _staffMemberId: number | BN | string,
         _name: string,
-        _departmentId: number | BN | string,
         _active: boolean,
         txDetails?: Truffle.TransactionDetails
       ): Promise<Truffle.TransactionResponse<AllEvents>>;
       call(
         _staffMemberId: number | BN | string,
         _name: string,
-        _departmentId: number | BN | string,
         _active: boolean,
         txDetails?: Truffle.TransactionDetails
       ): Promise<void>;
       sendTransaction(
         _staffMemberId: number | BN | string,
         _name: string,
-        _departmentId: number | BN | string,
         _active: boolean,
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
         _staffMemberId: number | BN | string,
         _name: string,
-        _departmentId: number | BN | string,
         _active: boolean,
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
@@ -471,17 +359,6 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
     };
-
-    "listStaffMembers(uint256,bool)"(
-      _from: number | BN | string,
-      skipInactive: boolean,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<{ id: BN; name: string; departmentId: BN; active: boolean }[]>;
-
-    "listStaffMembers(uint256)"(
-      _from: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<{ id: BN; name: string; departmentId: BN; active: boolean }[]>;
   };
 
   getPastEvents(event: string): Promise<EventData[]>;

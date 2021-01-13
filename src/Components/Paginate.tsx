@@ -5,20 +5,23 @@ import ListItem from "@material-ui/core/ListItem";
 import BN from "bn.js";
 import { Link as RouterLink } from "react-router-dom";
 const PER_PAGE = 10;
-type ContractBuilder<T> = (address: string) => Promise<T>;
+type ContractBuilder<T, K> = (address: K) => Promise<T>;
 type Children<T> = (contract: T) => React.ReactElement;
-function Paginate<T>({
+type Prefix<T> = string | ((value: T) => string);
+function Paginate<T, K>({
   caller,
   contractBuilder,
   children,
   length: lengthFunc,
   prefix,
+  additionalParams = [],
 }: {
-  caller: (from: number) => Promise<string[]>;
-  contractBuilder: ContractBuilder<T>;
+  caller: (from: number, ...args: any[]) => Promise<K[]>;
+  contractBuilder: ContractBuilder<T, K>;
   children: Children<T>;
   length: () => Promise<BN>;
-  prefix?: string;
+  prefix?: Prefix<K>;
+  additionalParams?: any[];
 }) {
   const [from, setFrom] = useState(0);
   const [length, setLength] = useState(0);
@@ -30,7 +33,7 @@ function Paginate<T>({
       });
   });
   return (
-    <Value params={[Math.max(0, from)]} value={caller}>
+    <Value params={[Math.max(0, from), ...additionalParams]} value={caller}>
       {(value) => {
         return (
           <List>
@@ -40,11 +43,24 @@ function Paginate<T>({
               </ListItem>
             )}
             {value
-              ?.filter((value) => value && value !== EMPTY)
+              ?.filter((value) => {
+                if (!value) {
+                  return false;
+                } else if (typeof value === "string") {
+                  return value !== EMPTY;
+                } else if (typeof value === "object") {
+                  // @ts-ignore
+                  return value.id !== "0" && value.id !== 0;
+                } else if (typeof value === "boolean") {
+                  return true;
+                } else {
+                  return value;
+                }
+              })
               .map((value) => (
-                <Item<T>
+                <Item<T, K>
                   value={value}
-                  key={value}
+                  key={JSON.stringify(value)}
                   prefix={prefix}
                   children={children}
                   contractBuilder={contractBuilder}
@@ -61,35 +77,37 @@ function Paginate<T>({
     </Value>
   );
 }
-function Item<T>({
+function Item<T, K>({
   value,
   contractBuilder,
   children,
   prefix,
 }: {
-  value: string;
-  prefix?: string;
+  value: K;
+  prefix?: Prefix<K>;
   children: Children<T>;
-  contractBuilder: ContractBuilder<T>;
+  contractBuilder: ContractBuilder<T, K>;
 }) {
   const component = (
     <Value params={[value]} value={contractBuilder}>
       {(result) => (result ? children(result) : null)}
     </Value>
   );
+  const key = JSON.stringify(value);
+  let to = "";
   if (typeof prefix === "string") {
+    to = prefix + "/" + value;
+  } else if (typeof prefix === "function") {
+    to = prefix(value);
+  }
+  if (to !== "") {
     return (
-      <ListItem
-        button
-        key={value}
-        component={RouterLink}
-        to={prefix + "/" + value}
-      >
+      <ListItem button key={key} component={RouterLink} to={to}>
         {component}
       </ListItem>
     );
   } else {
-    return <ListItem key={value}>{component}</ListItem>;
+    return <ListItem key={key}>{component}</ListItem>;
   }
 }
 export default Paginate;

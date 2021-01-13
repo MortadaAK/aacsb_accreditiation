@@ -99,21 +99,10 @@ contract Faculty {
 }
 
 contract Institution {
-    struct Department {
-        uint256 id;
-        string name;
-        mapping(uint256 => Faculty) faculties;
-        uint256 nextFacultyId;
-    }
     struct StaffMember {
         uint256 id;
         string name;
-        uint256 departmentId;
         bool active;
-    }
-    struct PublicDepartment {
-        uint256 id;
-        string name;
     }
 
     uint256 public id;
@@ -125,14 +114,14 @@ contract Institution {
     address[] public allowedModifiers;
     mapping(address => bool) allowedModifiersMap;
 
-    mapping(uint256 => Department) departments;
-    uint256 nextDepartmentId = 1;
-
     mapping(uint256 => StaffMember) staffMembers;
     uint256 nextStaffMembersId = 1;
 
     mapping(uint256 => Certificate) certificates;
     uint256 nextCertificateId = 0;
+
+    mapping(uint256 => Faculty) faculties;
+    uint256 nextFacultyId;
 
     event ModifierAdded(address by, address modifierAddress);
     event ModifierRemoved(address by, address modifierAddress);
@@ -155,71 +144,12 @@ contract Institution {
         }
     }
 
-    function createDepartment(string memory _name) public payable {
-        if (allowed(msg.sender)) {
-            uint256 _nextDepartmentId = nextDepartmentId++;
-            Department storage _department = departments[_nextDepartmentId];
-            _department.id = _nextDepartmentId;
-            _department.name = _name;
-            _department.nextFacultyId = 0;
-        }
-    }
-
-    function updateDepartment(uint256 _departmentId, string memory _name)
-        public
-        payable
-    {
-        if (allowed(msg.sender)) {
-            Department storage _department = departments[_departmentId];
-            _department.name = _name;
-        }
-    }
-
-    function department(uint256 _from)
-        public
-        view
-        returns (PublicDepartment memory)
-    {
-        return
-            PublicDepartment({
-                id: departments[_from].id,
-                name: departments[_from].name
-            });
-    }
-
-    function listDepartments(uint256 _from)
-        public
-        view
-        returns (PublicDepartment[10] memory)
-    {
-        PublicDepartment[10] memory list;
-        for (uint256 i = 0; i < 10; i++) {
-            list[i] = PublicDepartment({
-                id: departments[i + _from + 1].id,
-                name: departments[i + _from + 1].name
-            });
-        }
-        return list;
-    }
-
-    function departmentsLength() public view returns (uint256) {
-        return nextDepartmentId - 1;
-    }
-
     function staffMember(uint256 _from)
         public
         view
         returns (StaffMember memory)
     {
         return staffMembers[_from];
-    }
-
-    function listStaffMembers(uint256 _from)
-        public
-        view
-        returns (StaffMember[10] memory)
-    {
-        return listStaffMembers(_from, false);
     }
 
     function listStaffMembers(uint256 _from, bool skipInactive)
@@ -229,11 +159,11 @@ contract Institution {
     {
         StaffMember[10] memory list;
         for (uint256 i = 0; i < 10; i++) {
-            if (skipInactive && !staffMembers[i + _from + 1].active) {
+            if (nextStaffMembersId < i + _from + 1) {
+                i = 10;
+            } else if (skipInactive && !staffMembers[i + _from + 1].active) {
                 _from++;
                 i--;
-            } else if (nextStaffMembersId < i + _from + 1) {
-                i = 10;
             } else {
                 list[i] = staffMembers[i + _from + 1];
             }
@@ -245,16 +175,12 @@ contract Institution {
         return nextStaffMembersId - 1;
     }
 
-    function createStaffMember(string memory _name, uint256 _departmentId)
-        public
-        payable
-    {
+    function createStaffMember(string memory _name) public payable {
         if (allowed(msg.sender)) {
             uint256 _nextStaffMemberId = nextStaffMembersId++;
             StaffMember storage _staffMember = staffMembers[_nextStaffMemberId];
             _staffMember.id = _nextStaffMemberId;
             _staffMember.name = _name;
-            _staffMember.departmentId = _departmentId;
             _staffMember.active = true;
         }
     }
@@ -262,13 +188,11 @@ contract Institution {
     function updateStaffMember(
         uint256 _staffMemberId,
         string memory _name,
-        uint256 _departmentId,
         bool _active
     ) public payable {
         if (allowed(msg.sender)) {
             StaffMember storage _staffMember = staffMembers[_staffMemberId];
             _staffMember.name = _name;
-            _staffMember.departmentId = _departmentId;
             _staffMember.active = _active;
         }
     }

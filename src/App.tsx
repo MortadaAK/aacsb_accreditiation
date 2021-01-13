@@ -13,6 +13,8 @@ import Value from "./Components/Value";
 import FacultyPanel from "./Components/FacultyPanel";
 import Routes from "./Routes";
 import InstitutionPanel from "./Components/InstitutionPanel";
+import { Link as LinkRoute } from "react-router-dom";
+import { Button } from "@material-ui/core";
 const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
@@ -63,11 +65,12 @@ const Content = () => {
     <>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" className={classes.title}>
-            Photos
-          </Typography>
+          <Button component={LinkRoute} color="inherit" to="/">
+            Accadamic Accreditation
+          </Button>
+          <div style={{ flexGrow: 1 }}></div>
           <Tooltip title={account as string}>
-            <Typography variant="h6" className={classes.title}>
+            <Typography variant="h6">
               Your address is {(account as string).slice(0, 15)}...
             </Typography>
           </Tooltip>
