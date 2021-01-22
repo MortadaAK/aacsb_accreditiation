@@ -9,156 +9,86 @@ export interface ApplicationContract
   "new"(meta?: Truffle.TransactionDetails): Promise<ApplicationInstance>;
 }
 
-type AllEvents = never;
+export interface ApplicationEvent {
+  name: "ApplicationEvent";
+  args: {
+    eventType: string;
+    targetType: string;
+    targetAddress: string;
+    0: string;
+    1: string;
+    2: string;
+  };
+}
+
+type AllEvents = ApplicationEvent;
 
 export interface ApplicationInstance extends Truffle.ContractInstance {
-  faculties(
-    arg0: string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<string>;
+  certificatesManager(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
-  institutions(
-    arg0: number | BN | string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<string>;
+  facultiesManager(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
-  createInstitution: {
-    (_name: string, txDetails?: Truffle.TransactionDetails): Promise<
-      Truffle.TransactionResponse<AllEvents>
-    >;
-    call(_name: string, txDetails?: Truffle.TransactionDetails): Promise<void>;
-    sendTransaction(
-      _name: string,
+  instituionsManager(txDetails?: Truffle.TransactionDetails): Promise<string>;
+
+  emitEvent: {
+    (
+      eventType: string,
+      targetType: string,
+      targetAddress: string,
       txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      _name: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
-  listInstitutions(
-    _from: number | BN | string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<string[]>;
-
-  institutionsLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-  createFaculty: {
-    (_name: string, txDetails?: Truffle.TransactionDetails): Promise<
-      Truffle.TransactionResponse<AllEvents>
-    >;
-    call(_name: string, txDetails?: Truffle.TransactionDetails): Promise<void>;
-    sendTransaction(
-      _name: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      _name: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
-  listFaculties(
-    _from: number | BN | string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<string[]>;
-
-  facultiesLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-  removeCertificate: {
-    (_certificate: string, txDetails?: Truffle.TransactionDetails): Promise<
-      Truffle.TransactionResponse<AllEvents>
-    >;
+    ): Promise<Truffle.TransactionResponse<AllEvents>>;
     call(
-      _certificate: string,
+      eventType: string,
+      targetType: string,
+      targetAddress: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<void>;
     sendTransaction(
-      _certificate: string,
+      eventType: string,
+      targetType: string,
+      targetAddress: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
-      _certificate: string,
+      eventType: string,
+      targetType: string,
+      targetAddress: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };
 
   methods: {
-    faculties(
-      arg0: string,
+    certificatesManager(
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
 
-    institutions(
-      arg0: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
+    facultiesManager(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
-    createInstitution: {
-      (_name: string, txDetails?: Truffle.TransactionDetails): Promise<
-        Truffle.TransactionResponse<AllEvents>
-      >;
+    instituionsManager(txDetails?: Truffle.TransactionDetails): Promise<string>;
+
+    emitEvent: {
+      (
+        eventType: string,
+        targetType: string,
+        targetAddress: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<Truffle.TransactionResponse<AllEvents>>;
       call(
-        _name: string,
+        eventType: string,
+        targetType: string,
+        targetAddress: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<void>;
       sendTransaction(
-        _name: string,
+        eventType: string,
+        targetType: string,
+        targetAddress: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<number>;
-    };
-
-    listInstitutions(
-      _from: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string[]>;
-
-    institutionsLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-    createFaculty: {
-      (_name: string, txDetails?: Truffle.TransactionDetails): Promise<
-        Truffle.TransactionResponse<AllEvents>
-      >;
-      call(
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<void>;
-      sendTransaction(
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<string>;
-      estimateGas(
-        _name: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<number>;
-    };
-
-    listFaculties(
-      _from: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string[]>;
-
-    facultiesLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-    removeCertificate: {
-      (_certificate: string, txDetails?: Truffle.TransactionDetails): Promise<
-        Truffle.TransactionResponse<AllEvents>
-      >;
-      call(
-        _certificate: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<void>;
-      sendTransaction(
-        _certificate: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<string>;
-      estimateGas(
-        _certificate: string,
+        eventType: string,
+        targetType: string,
+        targetAddress: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
     };

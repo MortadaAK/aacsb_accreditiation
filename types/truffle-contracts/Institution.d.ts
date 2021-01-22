@@ -7,6 +7,7 @@ import { EventData, PastEventOptions } from "web3-eth-contract";
 export interface InstitutionContract
   extends Truffle.Contract<InstitutionInstance> {
   "new"(
+    _instituionsManager: string,
     _id: number | BN | string,
     _name: string,
     sender: string,
@@ -14,27 +15,7 @@ export interface InstitutionContract
   ): Promise<InstitutionInstance>;
 }
 
-export interface ModifierAdded {
-  name: "ModifierAdded";
-  args: {
-    by: string;
-    modifierAddress: string;
-    0: string;
-    1: string;
-  };
-}
-
-export interface ModifierRemoved {
-  name: "ModifierRemoved";
-  args: {
-    by: string;
-    modifierAddress: string;
-    0: string;
-    1: string;
-  };
-}
-
-type AllEvents = ModifierAdded | ModifierRemoved;
+type AllEvents = never;
 
 export interface InstitutionInstance extends Truffle.ContractInstance {
   allowedModifiers(
@@ -43,11 +24,6 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
   ): Promise<string>;
 
   id(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-  issuedCertificates(
-    arg0: number | BN | string,
-    txDetails?: Truffle.TransactionDetails
-  ): Promise<string>;
 
   name(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
@@ -178,22 +154,43 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
   ): Promise<boolean>;
 
   addCertificate: {
-    (_certificate: string, txDetails?: Truffle.TransactionDetails): Promise<
-      Truffle.TransactionResponse<AllEvents>
-    >;
+    (
+      _certificate: string,
+      _address: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse<AllEvents>>;
     call(
       _certificate: string,
+      _address: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<void>;
     sendTransaction(
       _certificate: string,
+      _address: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
       _certificate: string,
+      _address: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };
+
+  issuedCertificates(
+    _from: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<string[]>;
+
+  issuedCertificatesLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+  pendingCertificatesLength(
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN>;
+
+  pendingCertificates(
+    _from: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<string[]>;
 
   methods: {
     allowedModifiers(
@@ -202,11 +199,6 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
     ): Promise<string>;
 
     id(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-    issuedCertificates(
-      arg0: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
 
     name(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
@@ -343,22 +335,45 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
     ): Promise<boolean>;
 
     addCertificate: {
-      (_certificate: string, txDetails?: Truffle.TransactionDetails): Promise<
-        Truffle.TransactionResponse<AllEvents>
-      >;
+      (
+        _certificate: string,
+        _address: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<Truffle.TransactionResponse<AllEvents>>;
       call(
         _certificate: string,
+        _address: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<void>;
       sendTransaction(
         _certificate: string,
+        _address: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
         _certificate: string,
+        _address: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
     };
+
+    issuedCertificates(
+      _from: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string[]>;
+
+    issuedCertificatesLength(
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN>;
+
+    pendingCertificatesLength(
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN>;
+
+    pendingCertificates(
+      _from: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string[]>;
   };
 
   getPastEvents(event: string): Promise<EventData[]>;

@@ -1,13 +1,19 @@
-import web3 from "./web3";
 import ApplicationStorage from "./contracts/Application.json";
-import InstitutionStorage from "./contracts/Institution.json";
-import FacultyStorage from "./contracts/Faculty.json";
 import CertificateStorage from "./contracts/Certificate.json";
+import CertificatesManagerStorage from "./contracts/CertificatesManager.json";
+import FacultiesManagerStorage from "./contracts/FacultiesManager.json";
+import FacultyStorage from "./contracts/Faculty.json";
+import InstituionsManagerStorage from "./contracts/InstituionsManager.json";
+import InstitutionStorage from "./contracts/Institution.json";
 import create from "zustand";
+import web3 from "./web3";
 import {
   ApplicationInstance,
   CertificateInstance,
+  CertificatesManagerInstance,
+  FacultiesManagerInstance,
   FacultyInstance,
+  InstituionsManagerInstance,
   InstitutionInstance,
 } from "../types/truffle-contracts";
 
@@ -26,40 +32,82 @@ async function getContractInstance<T>(
     return instance.deployed();
   }
 }
+
+export interface NotificationParams {
+  eventType: string;
+  targetAddress: string;
+  targetType: string;
+}
 type Store = {
   application?: ApplicationInstance;
+  facultiesManager?: FacultiesManagerInstance;
+  certificatesManager?: CertificatesManagerInstance;
+  instituionsManager?: InstituionsManagerInstance;
+  subscription?: any;
   account: string;
   initialized: boolean;
   faculty: (address: string) => Promise<FacultyInstance>;
   institution: (address: string) => Promise<InstitutionInstance>;
   certificate: (address: string) => Promise<CertificateInstance>;
-  notify: (topic: string, params?: any[]) => void;
-  notifications: Record<string, number>;
-  notification: (topic: string, params?: any[]) => number;
 };
+const notificationTopics = (notification: NotificationParams) => [
+  `${notification.targetType}`,
+  `${notification.targetType}|${notification.targetAddress}`,
+];
+export let subscription: any;
+export const useSubscription = create<Record<string, Date>>(() => ({}));
 const useStore = create<Store>((set, get) => {
   getContractInstance<ApplicationInstance>(ApplicationStorage).then(
-    (application) => {
-      set({ application, initialized: true });
+    async (application) => {
+      if (application) {
+        const [
+          facultiesManagerAddress,
+          certificatesManagerAddress,
+          instituionsManagerAddress,
+        ] = await Promise.all([
+          application.facultiesManager(),
+          application.certificatesManager(),
+          application.instituionsManager(),
+        ]);
+        // @ts-ignore
+        subscription = application
+          // @ts-ignore
+          .allEvents({})
+          .on("data", ({ args }: { args: NotificationParams }) => {
+            const at = new Date();
+            notificationTopics(args).forEach((topic) => {
+              console.log({ topic });
+              useSubscription.setState({ [topic]: at });
+            });
+          });
+        set({
+          application,
+          facultiesManager: await getContractInstance<FacultiesManagerInstance>(
+            FacultiesManagerStorage,
+            facultiesManagerAddress
+          ),
+          certificatesManager: await getContractInstance<
+            CertificatesManagerInstance
+          >(CertificatesManagerStorage, certificatesManagerAddress),
+          instituionsManager: await getContractInstance<
+            InstituionsManagerInstance
+          >(InstituionsManagerStorage, instituionsManagerAddress),
+          initialized: true,
+        });
+      }
     }
   );
   web3.eth.getAccounts().then((accounts) => {
-    set({ account: accounts[0] });
+    set({
+      account: accounts[0],
+    });
   });
-  return {
-    notifications: {},
-    notification: (topic, params) => {
-      topic = `__notification__:${JSON.stringify({ topic, params })}`;
-      return get().notifications[topic] || 0;
-    },
 
-    notify: (topic, params) => {
-      topic = `__notification__:${JSON.stringify({ topic, params })}`;
-      const notifications = get().notifications;
-      const current = notifications[topic] || 0;
-      set({ notifications: { ...notifications, [topic]: current + 1 } });
-    },
+  return {
     application: undefined,
+    facultiesManager: undefined,
+    certificatesManager: undefined,
+    instituionsManager: undefined,
     account: "",
     initialized: false,
     faculty: (address) => {

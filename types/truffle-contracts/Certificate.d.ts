@@ -7,6 +7,7 @@ import { EventData, PastEventOptions } from "web3-eth-contract";
 export interface CertificateContract
   extends Truffle.Contract<CertificateInstance> {
   "new"(
+    _certificatesManager: string,
     _faculty: string,
     _institution: string,
     _degree: number | BN | string,
@@ -14,31 +15,7 @@ export interface CertificateContract
   ): Promise<CertificateInstance>;
 }
 
-export interface Approve {
-  name: "Approve";
-  args: {
-    sender: string;
-    0: string;
-  };
-}
-
-export interface Reject {
-  name: "Reject";
-  args: {
-    sender: string;
-    0: string;
-  };
-}
-
-export interface Request {
-  name: "Request";
-  args: {
-    sender: string;
-    0: string;
-  };
-}
-
-type AllEvents = Approve | Reject | Request;
+type AllEvents = never;
 
 export interface CertificateInstance extends Truffle.ContractInstance {
   degree(txDetails?: Truffle.TransactionDetails): Promise<BN>;
@@ -47,9 +24,26 @@ export interface CertificateInstance extends Truffle.ContractInstance {
 
   institution(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
-  specialtyField(txDetails?: Truffle.TransactionDetails): Promise<string>;
-
   status(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+  update: {
+    (
+      _degree: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse<AllEvents>>;
+    call(
+      _degree: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<void>;
+    sendTransaction(
+      _degree: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      _degree: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
 
   reject: {
     (txDetails?: Truffle.TransactionDetails): Promise<
@@ -69,7 +63,10 @@ export interface CertificateInstance extends Truffle.ContractInstance {
     estimateGas(txDetails?: Truffle.TransactionDetails): Promise<number>;
   };
 
-  editable(txDetails?: Truffle.TransactionDetails): Promise<boolean>;
+  editable(
+    _address: string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<boolean>;
 
   methods: {
     degree(txDetails?: Truffle.TransactionDetails): Promise<BN>;
@@ -78,9 +75,26 @@ export interface CertificateInstance extends Truffle.ContractInstance {
 
     institution(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
-    specialtyField(txDetails?: Truffle.TransactionDetails): Promise<string>;
-
     status(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+    update: {
+      (
+        _degree: number | BN | string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<Truffle.TransactionResponse<AllEvents>>;
+      call(
+        _degree: number | BN | string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<void>;
+      sendTransaction(
+        _degree: number | BN | string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<string>;
+      estimateGas(
+        _degree: number | BN | string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<number>;
+    };
 
     reject: {
       (txDetails?: Truffle.TransactionDetails): Promise<
@@ -100,7 +114,10 @@ export interface CertificateInstance extends Truffle.ContractInstance {
       estimateGas(txDetails?: Truffle.TransactionDetails): Promise<number>;
     };
 
-    editable(txDetails?: Truffle.TransactionDetails): Promise<boolean>;
+    editable(
+      _address: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<boolean>;
   };
 
   getPastEvents(event: string): Promise<EventData[]>;

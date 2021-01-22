@@ -1,44 +1,53 @@
 import React, { useEffect, useState } from "react";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { isBN } from "bn.js";
-import useStore from "../Store";
+import { useSubscription } from "../Store";
 export const EMPTY = "0x0000000000000000000000000000000000000000";
+type ContractBuilder<T> = (address: string) => Promise<T>;
 interface ValueProps<T> {
   value: ((...args: any[]) => Promise<T>) | undefined;
+  contractBuilder?: ContractBuilder<T>;
   params?: any[];
-  topic?: string;
   children?: (value: T | undefined) => React.ReactElement | null;
+  topic?: string;
 }
+
 /**
  *
  * A component that receive an async function (value) then renders it when it is ready.
  * In case of custom render, the children should be used as render props style.
  */
-function Value<T>({ value, params, topic, children }: ValueProps<T>) {
+function Value<T>({
+  value,
+  params,
+  children,
+  contractBuilder,
+  topic,
+}: ValueProps<T>) {
   const [result, setRestult] = useState<T | undefined>(undefined);
-  const notification = useStore((state) =>
-    topic ? state.notification(topic, params) : 0
-  );
   const [loading, setLoading] = useState(true);
+  const at = useSubscription((state) => (topic ? state[topic] : undefined));
   useEffect(() => {
-    if (typeof value === "function") {
-      value
-        .apply(null, params || [])
-        .then((result) => {
+    const load = async (counter = 5) => {
+      try {
+        if (typeof value === "function") {
+          const result = await value.apply(null, params || []);
           if (typeof result !== "string" || result !== EMPTY) {
-            setRestult(result);
+            if (contractBuilder) {
+              const contract = await contractBuilder(result as any);
+              setRestult(contract);
+            } else {
+              setRestult(result);
+            }
           }
-        })
-        .catch((error) => {
-          console.error(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-  }, [value, notification, params]);
+        }
+        setLoading(false);
+      } catch (e) {
+        if (counter > 0) setTimeout(() => load(counter - 1));
+      }
+    };
+    load();
+  }, [value, contractBuilder, params, at]);
 
   if (loading) {
     return (

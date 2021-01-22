@@ -4,7 +4,10 @@ import useStore from "../Store";
 import Paginate from "./Paginate";
 import Value from "./Value";
 const InstitutionsList = () => {
-  const { application, institution } = useStore();
+  const { instituionsManager, institution } = useStore((state) => ({
+    instituionsManager: state.instituionsManager,
+    institution: state.institution,
+  }));
   return (
     <Box>
       <AppBar position="relative">
@@ -13,10 +16,11 @@ const InstitutionsList = () => {
         </Toolbar>
       </AppBar>
       <Paginate
-        length={application?.institutionsLength!}
-        caller={application?.listInstitutions!}
+        length={instituionsManager?.institutionsLength!}
+        caller={instituionsManager?.listInstitutions!}
         contractBuilder={institution}
         prefix="/institutions"
+        topic="INSTITUTION"
       >
         {(institution) => <Value value={institution?.name} />}
       </Paginate>

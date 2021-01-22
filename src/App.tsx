@@ -56,11 +56,11 @@ const EstablishConnection = () => {
   );
 };
 const Content = () => {
-  const { account, application } = useStore((state) => ({
+  const { account, facultiesManager } = useStore((state) => ({
     account: state.account,
-    application: state.application!,
+    facultiesManager: state.facultiesManager!,
   }));
-  const classes = useStyles();
+
   return (
     <>
       <AppBar position="static">
@@ -85,9 +85,9 @@ const Content = () => {
             <Grid item sm={12} md={4}>
               <Box margin={1} padding={1}>
                 <Value
-                  value={application.faculties!}
+                  value={facultiesManager?.faculties}
                   params={[account]}
-                  topic="myFaculty"
+                  topic="FACULTY"
                 >
                   {(faculty) => <FacultyPanel address={faculty} />}
                 </Value>
@@ -103,7 +103,11 @@ const Content = () => {
   );
 };
 const App = () => {
-  const { initialized, account, application } = useStore();
+  const { initialized, account, application } = useStore((state) => ({
+    initialized: state.initialized,
+    account: state.account,
+    application: state.application,
+  }));
   if (typeof account === "string" && account.length > 0 && application) {
     return <Content />;
   } else if (initialized && !account) {

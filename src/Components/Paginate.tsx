@@ -15,6 +15,7 @@ function Paginate<T, K>({
   length: lengthFunc,
   prefix,
   additionalParams = [],
+  topic,
 }: {
   caller: (from: number, ...args: any[]) => Promise<K[]>;
   contractBuilder: ContractBuilder<T, K>;
@@ -22,6 +23,7 @@ function Paginate<T, K>({
   length: () => Promise<BN>;
   prefix?: Prefix<K>;
   additionalParams?: any[];
+  topic: string;
 }) {
   const [from, setFrom] = useState(0);
   const [length, setLength] = useState(0);
@@ -31,9 +33,13 @@ function Paginate<T, K>({
       .catch(() => {
         setLength(0);
       });
-  });
+  }, [setLength, lengthFunc]);
   return (
-    <Value params={[Math.max(0, from), ...additionalParams]} value={caller}>
+    <Value
+      params={[Math.max(0, from), ...additionalParams]}
+      value={caller}
+      topic={topic}
+    >
       {(value) => {
         return (
           <List>
@@ -57,6 +63,13 @@ function Paginate<T, K>({
                   return value;
                 }
               })
+              .reduce((list, value) => {
+                if (list.includes(value)) {
+                  return list;
+                } else {
+                  return list.concat([value]);
+                }
+              }, [] as K[])
               .map((value) => (
                 <Item<T, K>
                   value={value}

@@ -4,7 +4,10 @@ import useStore from "../Store";
 import Paginate from "./Paginate";
 import Value from "./Value";
 const FacultiesList = () => {
-  const { application, faculty } = useStore();
+  const { facultiesManager, faculty } = useStore((state) => ({
+    facultiesManager: state.facultiesManager,
+    faculty: state.faculty,
+  }));
   return (
     <Box>
       <AppBar position="relative">
@@ -13,10 +16,11 @@ const FacultiesList = () => {
         </Toolbar>
       </AppBar>
       <Paginate
-        length={application?.facultiesLength!}
-        caller={application?.listFaculties!}
+        length={facultiesManager?.facultiesLength!}
+        caller={facultiesManager?.listFaculties!}
         contractBuilder={faculty}
         prefix="/faculties"
+        topic="FACULTY"
       >
         {(faculty) => <Value value={faculty?.name} />}
       </Paginate>

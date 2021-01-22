@@ -1,56 +1,80 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.5.0 <0.9.0;
+pragma solidity >=0.5.0 <0.8.0;
 pragma abicoder v2;
+enum Degree {
+    ScholarlyAcademics,
+    PracticeAcademics,
+    ScholarlyPractitioner,
+    InstructionalPractitioner
+}
 
 contract Certificate {
     enum State {requested, approved, rejected}
-    enum Degree {
-        ScholarlyAcademics,
-        PracticeAcademics,
-        ScholarlyPractitioner,
-        InstructionalPractitioner
-    }
-    string public specialtyField;
+
     Faculty public faculty;
     Institution public institution;
     Degree public degree;
     State public status = State.requested;
-    Application application;
-    event Request(address sender);
-    event Reject(address sender);
-    event Approve(address sender);
+    CertificatesManager certificatesManager;
 
     constructor(
+        CertificatesManager _certificatesManager,
         Faculty _faculty,
         Institution _institution,
         Degree _degree
     ) {
+        certificatesManager = _certificatesManager;
         faculty = _faculty;
         institution = _institution;
         degree = _degree;
-        emit Request(msg.sender);
+    }
+
+    function update(Degree _degree) public payable {
+        if (editable(msg.sender)) {
+            degree = _degree;
+            certificatesManager.application().emitEvent(
+                "UPDATE_CERTIFICATE",
+                "CERTIFICATE",
+                address(this)
+            );
+        }
     }
 
     function reject() public payable {
-        if (editable()) {
+        if (editable(msg.sender)) {
             status = State.rejected;
-            emit Reject(msg.sender);
+            certificatesManager
+                .application()
+                .certificatesManager()
+                .removeCertificate(this);
+            certificatesManager.application().emitEvent(
+                "REJEcT_CERTIFICATE",
+                "CERTIFICATE",
+                address(this)
+            );
         }
     }
 
     function approve() public payable {
-        if (editable() && institution.allowed(msg.sender)) {
+        if (editable(msg.sender) && institution.allowed(msg.sender)) {
             status = State.approved;
-            faculty.addCertificate(this);
-            institution.addCertificate(this);
-            application.removeCertificate(this);
-            emit Approve(msg.sender);
+            faculty.addCertificate(this, msg.sender);
+            institution.addCertificate(this, msg.sender);
+            certificatesManager
+                .application()
+                .certificatesManager()
+                .removeCertificate(this);
+            certificatesManager.application().emitEvent(
+                "APPROVE_CERTIFICATE",
+                "CERTIFICATE",
+                address(this)
+            );
         }
     }
 
-    function editable() public view returns (bool) {
+    function editable(address _address) public view returns (bool) {
         return ((status == State.requested &&
-            (institution.allowed(msg.sender))) || faculty.allowed(msg.sender));
+            (institution.allowed(_address))) || faculty.allowed(_address));
     }
 }
 
@@ -60,14 +84,15 @@ contract Faculty {
     address public owner;
     Certificate[] public certificates;
     Institution public currentInstitution;
-
-    event CertificateAdded(address assigner, Certificate certificate);
+    FacultiesManager facultiesManager;
 
     constructor(
+        FacultiesManager _facultiesManager,
         uint256 _id,
         string memory _name,
         address _owner
     ) {
+        facultiesManager = _facultiesManager;
         name = _name;
         id = _id;
         owner = _owner;
@@ -76,6 +101,11 @@ contract Faculty {
     function update(string memory _name) public payable {
         if (allowed(msg.sender)) {
             name = _name;
+            facultiesManager.application().emitEvent(
+                "UPDATE_FACULTY",
+                "FACULTY",
+                address(this)
+            );
         }
     }
 
@@ -90,11 +120,46 @@ contract Faculty {
         return _address == owner;
     }
 
-    function addCertificate(Certificate _certificate) public payable {
-        if (_certificate.institution().allowed(msg.sender)) {
+    function addCertificate(Certificate _certificate, address _address)
+        public
+        payable
+    {
+        if (
+            _certificate.institution().allowed(_address) &&
+            _certificate.status() == Certificate.State.approved &&
+            _certificate.faculty() == this
+        ) {
             certificates.push(_certificate);
-            emit CertificateAdded(msg.sender, _certificate);
+            facultiesManager.application().emitEvent(
+                "ADD_CERTIFICATE",
+                "FACULTY",
+                address(this)
+            );
         }
+    }
+
+    function certificatesLength() public view returns (uint256) {
+        return certificates.length;
+    }
+
+    function pendingCertificatesLength() public view returns (uint256) {
+        return
+            facultiesManager
+                .application()
+                .certificatesManager()
+                .pendingCertificateLengthForFaculty(this);
+    }
+
+    function pendingCertificates(uint256 _from)
+        public
+        view
+        returns (Certificate[10] memory)
+    {
+        return
+            facultiesManager
+                .application()
+                .certificatesManager()
+                .pendingCertificateForFaculty(this, _from);
     }
 }
 
@@ -109,28 +174,24 @@ contract Institution {
     string public name;
     address public owner;
 
-    Certificate[] public issuedCertificates;
-
+    Certificate[] certificates;
+    InstituionsManager instituionsManager;
     address[] public allowedModifiers;
     mapping(address => bool) allowedModifiersMap;
 
     mapping(uint256 => StaffMember) staffMembers;
     uint256 nextStaffMembersId = 1;
 
-    mapping(uint256 => Certificate) certificates;
-    uint256 nextCertificateId = 0;
-
     mapping(uint256 => Faculty) faculties;
     uint256 nextFacultyId;
 
-    event ModifierAdded(address by, address modifierAddress);
-    event ModifierRemoved(address by, address modifierAddress);
-
     constructor(
+        InstituionsManager _instituionsManager,
         uint256 _id,
         string memory _name,
         address sender
     ) {
+        instituionsManager = _instituionsManager;
         id = _id;
         name = _name;
         owner = sender;
@@ -182,6 +243,11 @@ contract Institution {
             _staffMember.id = _nextStaffMemberId;
             _staffMember.name = _name;
             _staffMember.active = true;
+            instituionsManager.application().emitEvent(
+                "ADD_STAFF_MEMBER_INSTITUTION",
+                "INSTITUTION",
+                address(this)
+            );
         }
     }
 
@@ -194,6 +260,11 @@ contract Institution {
             StaffMember storage _staffMember = staffMembers[_staffMemberId];
             _staffMember.name = _name;
             _staffMember.active = _active;
+            instituionsManager.application().emitEvent(
+                "UPDATE_STAFF_MEMBER_INSTITUTION",
+                "INSTITUTION",
+                address(this)
+            );
         }
     }
 
@@ -221,7 +292,11 @@ contract Institution {
         if (allowed(msg.sender) && !allowedModifiersMap[_modifier]) {
             allowedModifiers.push(_modifier);
             allowedModifiersMap[_modifier] = true;
-            emit ModifierAdded(msg.sender, _modifier);
+            instituionsManager.application().emitEvent(
+                "ADD_MODIFIER_INSTITUTION",
+                "INSTITUTION",
+                address(this)
+            );
         }
     }
 
@@ -237,7 +312,11 @@ contract Institution {
                 }
             }
             delete allowedModifiersMap[_modifier];
-            emit ModifierRemoved(msg.sender, _modifier);
+            instituionsManager.application().emitEvent(
+                "REMOVE_MODIFIER_INSTITUTION",
+                "INSTITUTION",
+                address(this)
+            );
         }
     }
 
@@ -277,58 +356,214 @@ contract Institution {
         }
     }
 
-    function addCertificate(Certificate _certificate) public payable {
+    function addCertificate(Certificate _certificate, address _address)
+        public
+        payable
+    {
         if (
-            allowed(msg.sender) &&
+            allowed(_address) &&
             _certificate.status() == Certificate.State.approved &&
             _certificate.institution() == this
         ) {
-            issuedCertificates.push(_certificate);
+            certificates.push(_certificate);
+            instituionsManager.application().emitEvent(
+                "ADD_CERTIFICATE_INSTITUTION",
+                "INSTITUTION",
+                address(this)
+            );
         }
+    }
+
+    function issuedCertificates(uint256 _from)
+        public
+        view
+        returns (Certificate[10] memory)
+    {
+        Certificate[10] memory _list;
+        uint256 _count = 0;
+        for (uint256 i = _from; i < certificates.length && _count < 10; i++) {
+            _list[_count] = certificates[i];
+            _count++;
+        }
+        return _list;
+    }
+
+    function issuedCertificatesLength() public view returns (uint256) {
+        return certificates.length;
+    }
+
+    function pendingCertificatesLength() public view returns (uint256) {
+        return
+            instituionsManager
+                .application()
+                .certificatesManager()
+                .pendingCertificateLengthForInstitution(this);
+    }
+
+    function pendingCertificates(uint256 _from)
+        public
+        view
+        returns (Certificate[10] memory)
+    {
+        return
+            instituionsManager
+                .application()
+                .certificatesManager()
+                .pendingCertificateForInstitution(this, _from);
     }
 }
 
-contract Application {
-    /*
-    Application is the root contract that the UI will use to interact with sub contracts 
-    */
+contract CertificatesManager {
+    Certificate[] pendingCertificates;
+    Application public application;
 
-    mapping(uint256 => Institution) public institutions;
-    uint256 nextInstitutionId = 0;
+    constructor(Application _application) {
+        application = _application;
+    }
+
+    function requestCertificate(
+        Faculty _faculty,
+        Institution _institution,
+        Degree _degree
+    ) public payable {
+        Certificate _certificate =
+            new Certificate(this, _faculty, _institution, _degree);
+        pendingCertificates.push(_certificate);
+        application.emitEvent(
+            "REQUEST_CERTIFICATE",
+            "INSTITUTION",
+            address(_institution)
+        );
+        application.emitEvent(
+            "REQUEST_CERTIFICATE",
+            "FACULTY",
+            address(_faculty)
+        );
+    }
+
+    function removeCertificate(Certificate _certificate) public payable {
+        for (uint256 i = 0; i < pendingCertificates.length; i++) {
+            if (pendingCertificates[i] == _certificate) {
+                uint256 _lastIndex = pendingCertificates.length - 1;
+                if (i < _lastIndex) {
+                    pendingCertificates[i] = pendingCertificates[_lastIndex];
+                }
+                pendingCertificates.pop();
+            }
+        }
+        application.emitEvent(
+            "CERTIFICATE_REMOVE",
+            "INSTITUTION",
+            address(_certificate.institution())
+        );
+        application.emitEvent(
+            "CERTIFICATE_REMOVE",
+            "FACULTY",
+            address(_certificate.faculty())
+        );
+    }
+
+    function pendingCertificateLengthForFaculty(Faculty _faculty)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 _count = 0;
+        for (uint256 i = 0; i < pendingCertificates.length; i++) {
+            if (pendingCertificates[i].faculty() == _faculty) {
+                _count++;
+            }
+        }
+        return _count;
+    }
+
+    function pendingCertificateForFaculty(Faculty _faculty, uint256 _from)
+        public
+        view
+        returns (Certificate[10] memory)
+    {
+        Certificate[10] memory _list;
+        uint256 _count = 0;
+        uint256 _toSkip = 0;
+        for (
+            uint256 i = 0;
+            i < pendingCertificates.length && _count <= 10;
+            i++
+        ) {
+            if (pendingCertificates[i].faculty() == _faculty) {
+                if (_toSkip >= _from) {
+                    _list[_count] = pendingCertificates[i];
+                    _count++;
+                }
+                _toSkip++;
+            }
+        }
+        return _list;
+    }
+
+    function pendingCertificateLengthForInstitution(Institution _institution)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 _count = 0;
+        for (uint256 i = 0; i < pendingCertificates.length; i++) {
+            if (pendingCertificates[i].institution() == _institution) {
+                _count++;
+            }
+        }
+        return _count;
+    }
+
+    function pendingCertificateForInstitution(
+        Institution _institution,
+        uint256 _from
+    ) public view returns (Certificate[10] memory) {
+        Certificate[10] memory _list;
+        uint256 _count = 0;
+        uint256 _toSkip = 0;
+        for (
+            uint256 i = 0;
+            i < pendingCertificates.length && _count <= 10;
+            i++
+        ) {
+            if (pendingCertificates[i].institution() == _institution) {
+                if (_toSkip >= _from) {
+                    _list[_count] = pendingCertificates[i];
+                    _count++;
+                }
+                _toSkip++;
+            }
+        }
+        return _list;
+    }
+}
+
+contract FacultiesManager {
+    Application public application;
     mapping(address => Faculty) public faculties;
     mapping(uint256 => Faculty) facultiesByIndex;
     uint256 nextFacultyId = 0;
 
-    mapping(uint256 => Certificate[]) pendingCertificates;
-
-    function createInstitution(string memory _name) public payable {
-        uint256 _id = nextInstitutionId++;
-        Institution _institution = new Institution(_id, _name, msg.sender);
-        institutions[_id] = _institution;
+    constructor(Application _application) {
+        application = _application;
     }
 
-    function listInstitutions(uint256 _from)
-        public
-        view
-        returns (Institution[10] memory)
-    {
-        Institution[10] memory list;
-        for (uint256 i = 0; i < 10; i++) {
-            list[i] = institutions[i + _from];
-        }
-        return list;
-    }
-
-    function institutionsLength() public view returns (uint256) {
-        return nextInstitutionId;
+    function facultiesLength() public view returns (uint256) {
+        return nextFacultyId;
     }
 
     function createFaculty(string memory _name) public payable {
         if (address(faculties[msg.sender]) == address(0x0)) {
             uint256 _id = nextFacultyId++;
-            Faculty faculty = new Faculty(_id, _name, msg.sender);
+            Faculty faculty = new Faculty(this, _id, _name, msg.sender);
             facultiesByIndex[_id] = faculty;
             faculties[msg.sender] = faculty;
+            application.emitEvent(
+                "CREATE_FACULTY",
+                "FACULTY",
+                address(faculty)
+            );
         }
     }
 
@@ -343,23 +578,70 @@ contract Application {
         }
         return list;
     }
+}
 
-    function facultiesLength() public view returns (uint256) {
-        return nextFacultyId;
+contract InstituionsManager {
+    Application public application;
+    mapping(uint256 => Institution) public institutions;
+    uint256 nextInstitutionId = 0;
+
+    constructor(Application _application) {
+        application = _application;
     }
 
-    function removeCertificate(Certificate _certificate) public payable {
-        uint256 _instituionId = _certificate.institution().id();
-        Certificate[] storage _pendingCertificates =
-            pendingCertificates[_instituionId];
-        for (uint256 i = 0; i < _pendingCertificates.length; i++) {
-            if (_pendingCertificates[i] == _certificate) {
-                uint256 _lastIndex = _pendingCertificates.length - 1;
-                if (i < _lastIndex) {
-                    _pendingCertificates[i] = _pendingCertificates[_lastIndex];
-                }
-                _pendingCertificates.pop();
-            }
+    function institutionsLength() public view returns (uint256) {
+        return nextInstitutionId;
+    }
+
+    function createInstitution(string memory _name) public payable {
+        uint256 _id = nextInstitutionId++;
+        Institution _institution =
+            new Institution(this, _id, _name, msg.sender);
+        institutions[_id] = _institution;
+        application.emitEvent(
+            "CREATE_INSTITUTION",
+            "INSTITUTION",
+            address(_institution)
+        );
+    }
+
+    function listInstitutions(uint256 _from)
+        public
+        view
+        returns (Institution[10] memory)
+    {
+        Institution[10] memory list;
+        for (uint256 i = 0; i < 10; i++) {
+            list[i] = institutions[i + _from];
         }
+        return list;
+    }
+}
+
+contract Application {
+    /*
+    Application is the root contract that the UI will use to interact with sub contracts 
+    */
+    CertificatesManager public certificatesManager;
+    FacultiesManager public facultiesManager;
+    InstituionsManager public instituionsManager;
+    event ApplicationEvent(
+        string eventType,
+        string targetType,
+        address targetAddress
+    );
+
+    constructor() {
+        certificatesManager = new CertificatesManager(this);
+        facultiesManager = new FacultiesManager(this);
+        instituionsManager = new InstituionsManager(this);
+    }
+
+    function emitEvent(
+        string memory eventType,
+        string memory targetType,
+        address targetAddress
+    ) public payable {
+        emit ApplicationEvent(eventType, targetType, targetAddress);
     }
 }

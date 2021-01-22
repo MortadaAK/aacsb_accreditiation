@@ -12,7 +12,10 @@ import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogActions from "@material-ui/core/DialogActions";
-import { TextField } from "@material-ui/core";
+import { Grid, TextField } from "@material-ui/core";
+import { FacultyInstance } from "../../types/truffle-contracts";
+import { Degree, DegreeSelect } from "../Degree";
+import InstitutionSelect, { InstitutionRecord } from "./InstitutionSelect";
 const useStyles = makeStyles((theme) => ({
   root: {
     maxWidth: 345,
@@ -47,13 +50,15 @@ const useStyles = makeStyles((theme) => ({
 const Panel = ({ address }: { address: string }) => {
   const classes = useStyles();
   const [name, setName] = useState("");
-  const {
-    faculty: getFaculty,
-    institution: getInstition,
-    account,
-  } = useStore();
+  const { faculty: getFaculty, institution: getInstition, account } = useStore(
+    (state) => ({
+      faculty: state.faculty,
+      institution: state.institution,
+      account: state.account,
+    })
+  );
   return (
-    <Value value={getFaculty} params={[address]}>
+    <Value value={getFaculty} params={[address]} topic="FACULTY">
       {(faculty) => {
         if (faculty) {
           return (
@@ -61,7 +66,7 @@ const Panel = ({ address }: { address: string }) => {
               <CardHeader
                 titleTypographyProps={{ component: "span" }}
                 title={
-                  <Value topic="Faculty" value={faculty.name}>
+                  <Value value={faculty.name}>
                     {(name) => {
                       setName(name!);
                       return <>{name}</>;
@@ -99,6 +104,7 @@ const Panel = ({ address }: { address: string }) => {
                   allowed ? (
                     <CardActions disableSpacing>
                       <Form name={name} title="Edit" action={faculty.update} />
+                      <RequestCertificate faculty={faculty} />
                     </CardActions>
                   ) : null
                 }
@@ -112,6 +118,71 @@ const Panel = ({ address }: { address: string }) => {
     </Value>
   );
 };
+
+const RequestCertificate = ({ faculty }: { faculty: FacultyInstance }) => {
+  const [visible, setVisible] = useState(false);
+  const [degree, setDegree] = useState(Degree.InstructionalPractitioner);
+  const [instituion, setInstituion] = useState<InstitutionRecord | null>(null);
+  const { certificatesManager, account } = useStore((state) => ({
+    certificatesManager: state.certificatesManager,
+    account: state.account,
+  }));
+
+  const handleClose = () => {
+    setVisible(false);
+  };
+  const handleSave = async () => {
+    if (instituion && instituion.address) {
+      await certificatesManager?.requestCertificate(
+        faculty.address,
+        instituion.address,
+        degree,
+        { from: account }
+      );
+      handleClose();
+    }
+  };
+  return (
+    <>
+      <Button variant="contained" onClick={() => setVisible(true)}>
+        Request Certificate
+      </Button>
+      {visible && (
+        <Dialog
+          fullWidth
+          maxWidth="sm"
+          onClose={handleClose}
+          aria-labelledby="customized-dialog-title"
+          open={visible}
+        >
+          <DialogContent dividers>
+            <Grid container spacing={4}>
+              <Grid item xs={12}>
+                <DegreeSelect
+                  value={degree}
+                  onChange={(degree) => setDegree(degree)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <InstitutionSelect
+                  instituion={instituion}
+                  onChange={(instituion) =>
+                    instituion && setInstituion(instituion)
+                  }
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button autoFocus onClick={handleSave} color="primary">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </>
+  );
+};
 const Form = ({
   title,
   action,
@@ -123,7 +194,7 @@ const Form = ({
 }) => {
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState(initialName);
-  const { account, notify } = useStore();
+  const { account } = useStore((state) => ({ account: state.account }));
   useEffect(() => {
     setName(initialName);
   }, [initialName]);
@@ -133,7 +204,6 @@ const Form = ({
   const handleSave = () => {
     action(name, { from: account }).then(() => {
       handleClose();
-      notify("myFaculty");
     });
   };
   return (
@@ -143,6 +213,8 @@ const Form = ({
       </Button>
       {visible && (
         <Dialog
+          fullWidth
+          maxWidth="sm"
           onClose={handleClose}
           aria-labelledby="customized-dialog-title"
           open={visible}
@@ -167,10 +239,13 @@ const Form = ({
   );
 };
 const Register = () => {
-  const { application } = useStore();
+  const facultiesManager = useStore((state) => state.facultiesManager);
 
   return (
-    <Form title="Register as Faculty" action={application?.createFaculty!} />
+    <Form
+      title="Register as Faculty"
+      action={facultiesManager?.createFaculty!}
+    />
   );
 };
 const FacultyPanel = ({ address }: { address: string | undefined }) => {
