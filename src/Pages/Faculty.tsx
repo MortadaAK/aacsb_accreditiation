@@ -1,4 +1,11 @@
-import { AppBar, Badge, Grid, Toolbar, Typography } from "@material-ui/core";
+import {
+  AppBar,
+  Badge,
+  Button,
+  Grid,
+  Toolbar,
+  Typography,
+} from "@material-ui/core";
 import React from "react";
 import { FacultyInstance } from "../../types/truffle-contracts";
 import Paginate from "../Components/Paginate";
@@ -6,6 +13,7 @@ import Value from "../Components/Value";
 import useStore from "../Store";
 import CertificateListItem from "../Components/CertificateListItem";
 import { useParams } from "react-router";
+import { Link as RouterLink } from "react-router-dom";
 const IssuedCertificates = ({ faculty }: { faculty: FacultyInstance }) => {
   const { application } = useStore((state) => ({
     application: state.application,
@@ -80,7 +88,10 @@ const PendingCertificates = ({ faculty }: { faculty: FacultyInstance }) => {
 };
 const Faculty = () => {
   const { address } = useParams<{ address: string }>();
-  const faculty = useStore((state) => state.faculty);
+  const { faculty, institutionBuilder } = useStore((state) => ({
+    faculty: state.faculty,
+    institutionBuilder: state.institution,
+  }));
   return (
     <Value value={faculty} params={[address]}>
       {(faculty) =>
@@ -92,10 +103,34 @@ const Faculty = () => {
                   <Value value={faculty.name}>
                     {(name) => <Typography>{name}</Typography>}
                   </Value>
+                  <div style={{ flex: 1 }}></div>
+                  <Value
+                    value={faculty.currentInstitution}
+                    topic={`FACULTY|${faculty.address}`}
+                  >
+                    {(address) =>
+                      address ? (
+                        <Value value={institutionBuilder} params={[address]}>
+                          {(institution) => (
+                            <Value value={institution?.name}>
+                              {(name) => (
+                                <Button
+                                  color="inherit"
+                                  component={RouterLink}
+                                  to={`/institutions/${institution?.address}`}
+                                >
+                                  {name}
+                                </Button>
+                              )}
+                            </Value>
+                          )}
+                        </Value>
+                      ) : null
+                    }
+                  </Value>
                 </Toolbar>
               </AppBar>
             </Grid>
-            <Grid item xs={12}></Grid>
             <Grid item xs={12} md={6}>
               <IssuedCertificates faculty={faculty} />
             </Grid>

@@ -97,10 +97,17 @@ contract Faculty {
         }
     }
 
-    function assignInstitution(address _institutionAddress) public payable {
-        Institution _institution = Institution(_institutionAddress);
-        if (_institution.allowed(msg.sender)) {
+    function assignInstitution(Institution _institution) public payable {
+        if (
+            address(_institution) == msg.sender ||
+            address(currentInstitution) == msg.sender
+        ) {
             currentInstitution = _institution;
+            facultiesManager.application().emitEvent(
+                "ASSIGN_INSTITUION",
+                "FACULTY",
+                address(this)
+            );
         }
     }
 
@@ -182,8 +189,8 @@ contract Institution {
     mapping(uint256 => StaffMember) staffMembers;
     uint256 nextStaffMembersId = 1;
 
-    mapping(uint256 => Faculty) faculties;
-    uint256 nextFacultyId;
+    Faculty[] faculties;
+    mapping(Faculty => bool) facultiesMap;
 
     constructor(
         InstituionsManager _instituionsManager,
@@ -408,6 +415,60 @@ contract Institution {
                 .application()
                 .certificatesManager()
                 .pendingCertificateForInstitution(this, _from);
+    }
+
+    function listFaculties(uint256 _from)
+        public
+        view
+        returns (Faculty[10] memory)
+    {
+        Faculty[10] memory list;
+        for (uint256 i = 0; i < 10 && i + _from < faculties.length; i++) {
+            list[i] = faculties[i + _from];
+        }
+        return list;
+    }
+
+    function facultiesLength() public view returns (uint256) {
+        return faculties.length;
+    }
+
+    function addFaculty(Faculty _faculty) public payable {
+        if (
+            allowed(msg.sender) &&
+            _faculty.currentInstitution() == Institution(0) &&
+            !facultiesMap[_faculty]
+        ) {
+            faculties.push(_faculty);
+            facultiesMap[_faculty] = true;
+            _faculty.assignInstitution(this);
+            instituionsManager.application().emitEvent(
+                "ADD_FACULTY_INSTITUTION",
+                "INSTITUTION",
+                address(this)
+            );
+        }
+    }
+
+    function removeFaculty(Faculty _faculty) public payable {
+        if (allowed(msg.sender) && _faculty.currentInstitution() == this) {
+            for (uint256 i = 0; i < faculties.length; i++) {
+                if (faculties[i] == _faculty) {
+                    uint256 _lastIndex = faculties.length - 1;
+                    if (i < _lastIndex) {
+                        faculties[i] = faculties[_lastIndex];
+                    }
+                    faculties.pop();
+                }
+            }
+            delete facultiesMap[_faculty];
+            _faculty.assignInstitution(Institution(0));
+            instituionsManager.application().emitEvent(
+                "REMOVE_FACULTY_INSTITUTION",
+                "INSTITUTION",
+                address(this)
+            );
+        }
     }
 }
 

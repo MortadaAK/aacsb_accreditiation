@@ -62,6 +62,7 @@ const Panel = ({ address }: { address: string }) => {
     <Value value={getFaculty} params={[address]} topic="FACULTY">
       {(faculty) => {
         if (faculty) {
+          console.log({ a: `FACULTY|${faculty.address}` });
           return (
             <Card className={classes.root}>
               <CardHeader
@@ -76,25 +77,25 @@ const Panel = ({ address }: { address: string }) => {
                 }
               />
               <CardContent>
-                <Value value={faculty.currentInstitution}>
-                  {(address) => (
-                    <Value
-                      value={address ? () => getInstition(address) : undefined}
-                    >
-                      {(instition) => (
-                        <Value value={instition?.name}>
-                          {(name) => {
-                            return (
-                              <Typography variant="body2" color="textSecondary">
-                                Institution: {name}
-                              </Typography>
-                            );
-                          }}
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  component="div"
+                >
+                  Institution:{" "}
+                  <Value
+                    value={faculty.currentInstitution}
+                    topic={`FACULTY|${faculty.address}`}
+                  >
+                    {(address) =>
+                      address ? (
+                        <Value value={getInstition} params={[address]}>
+                          {(instition) => <Value value={instition?.name} />}
                         </Value>
-                      )}
-                    </Value>
-                  )}
-                </Value>
+                      ) : null
+                    }
+                  </Value>
+                </Typography>
               </CardContent>
               <Value value={faculty.allowed} params={[account]}>
                 {(allowed) =>
@@ -128,7 +129,7 @@ const Panel = ({ address }: { address: string }) => {
             </Card>
           );
         } else {
-          return <></>;
+          return null;
         }
       }}
     </Value>

@@ -18,13 +18,17 @@ import Remove from "@material-ui/icons/Remove";
 import Add from "@material-ui/icons/Add";
 import React, { useState } from "react";
 import { useParams } from "react-router";
-import { InstitutionInstance } from "../../types/truffle-contracts";
+import {
+  FacultyInstance,
+  InstitutionInstance,
+} from "../../types/truffle-contracts";
 import Paginate from "../Components/Paginate";
 import Value from "../Components/Value";
 import useStore from "../Store";
 import CertificateListItem from "../Components/CertificateListItem";
 import FacultySelect, { FacultyRecord } from "../Components/FacultySelect";
 import { Degree, DegreeSelect } from "../Degree";
+import { Link as RouterLink } from "react-router-dom";
 const ModifierBuilder = (address: string) => Promise.resolve(address);
 const DepartmentBuilder = (department: { id: BN; name: string }) =>
   Promise.resolve(department);
@@ -237,6 +241,114 @@ const StaffMembers = ({
     </>
   );
 };
+const Faculties = ({ institution }: { institution: InstitutionInstance }) => {
+  const { account, builder } = useStore((state) => ({
+    account: state.account,
+    builder: state.faculty,
+  }));
+  const [open, setOpen] = useState(false);
+  const [faculty, setFaculty] = useState<FacultyRecord | null>(null);
+  const handleOpen = () => setOpen(true);
+  const removeFacult = (faculty: FacultyInstance) => async () => {
+    await institution.removeFaculty(faculty.address, { from: account });
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setFaculty(null);
+  };
+  const handleSave = async () => {
+    if (faculty) {
+      await institution.addFaculty(faculty.address, { from: account });
+    }
+    handleClose();
+  };
+  return (
+    <Value value={institution.allowed} params={[account]}>
+      {(allowed) => (
+        <>
+          <AppBar position="relative" color="secondary">
+            <Toolbar>
+              <Badge
+                color="primary"
+                badgeContent={
+                  <Value
+                    topic={`INSTITUTION|${institution.address}`}
+                    value={institution.facultiesLength}
+                  />
+                }
+              >
+                <Typography>Faculties</Typography>
+              </Badge>
+              <Space />
+              {allowed ? (
+                <IconButton
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  color="inherit"
+                  onClick={handleOpen}
+                >
+                  <Add />
+                </IconButton>
+              ) : null}
+            </Toolbar>
+          </AppBar>
+          <Paginate
+            caller={institution.listFaculties}
+            length={institution.facultiesLength}
+            contractBuilder={builder}
+            topic={`INSTITUTION|${institution.address}`}
+          >
+            {(faculty) => (
+              <>
+                <Value value={faculty.name}>
+                  {(name) => (
+                    <ListItemText>
+                      <Button
+                        component={RouterLink}
+                        to={`/faculties/${faculty.address}`}
+                      >
+                        {name}
+                      </Button>
+                    </ListItemText>
+                  )}
+                </Value>
+                {allowed ? (
+                  <ListItemSecondaryAction>
+                    <IconButton onClick={removeFacult(faculty)}>
+                      <Remove />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                ) : null}
+              </>
+            )}
+          </Paginate>
+          {open && (
+            <Dialog
+              fullWidth
+              maxWidth="sm"
+              onClose={handleClose}
+              aria-labelledby="customized-dialog-title"
+              open={open}
+            >
+              <DialogContent dividers>
+                <FacultySelect
+                  faculty={faculty}
+                  onChange={(faculty) => faculty && setFaculty(faculty)}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button autoFocus onClick={handleSave} color="primary">
+                  Save
+                </Button>
+              </DialogActions>
+            </Dialog>
+          )}
+        </>
+      )}
+    </Value>
+  );
+};
 const PendingCertificates = ({
   institution,
 }: {
@@ -404,11 +516,7 @@ const Institution = () => {
               </AppBar>
             </Grid>
             <Grid item xs={12} md={6}>
-              <AppBar position="relative" color="secondary">
-                <Toolbar>
-                  <Typography>Faculties</Typography>
-                </Toolbar>
-              </AppBar>
+              <Faculties institution={institution} />
             </Grid>
             <Grid item xs={12} md={6}>
               <StaffMembers institution={institution} />

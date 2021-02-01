@@ -76,7 +76,6 @@ const useStore = create<Store>((set, get) => {
           .on("data", ({ args }: { args: NotificationParams }) => {
             const at = new Date();
             notificationTopics(args).forEach((topic) => {
-              console.log({ topic });
               useSubscription.setState({ [topic]: at });
             });
           });

@@ -3,17 +3,11 @@
 
 import { ApplicationContract } from "./Application";
 import { CertificateContract } from "./Certificate";
-import { CertificateManagerContract } from "./CertificateManager";
-import { CertificatesContract } from "./Certificates";
 import { CertificatesManagerContract } from "./CertificatesManager";
-import { FacultiesContract } from "./Faculties";
 import { FacultiesManagerContract } from "./FacultiesManager";
 import { FacultyContract } from "./Faculty";
-import { InboxContract } from "./Inbox";
 import { InstituionsManagerContract } from "./InstituionsManager";
 import { InstitutionContract } from "./Institution";
-import { InstitutionsContract } from "./Institutions";
-import { InsututionsContract } from "./Insututions";
 import { MigrationsContract } from "./Migrations";
 
 declare global {
@@ -21,17 +15,11 @@ declare global {
     interface Artifacts {
       require(name: "Application"): ApplicationContract;
       require(name: "Certificate"): CertificateContract;
-      require(name: "CertificateManager"): CertificateManagerContract;
-      require(name: "Certificates"): CertificatesContract;
       require(name: "CertificatesManager"): CertificatesManagerContract;
-      require(name: "Faculties"): FacultiesContract;
       require(name: "FacultiesManager"): FacultiesManagerContract;
       require(name: "Faculty"): FacultyContract;
-      require(name: "Inbox"): InboxContract;
       require(name: "InstituionsManager"): InstituionsManagerContract;
       require(name: "Institution"): InstitutionContract;
-      require(name: "Institutions"): InstitutionsContract;
-      require(name: "Insututions"): InsututionsContract;
       require(name: "Migrations"): MigrationsContract;
     }
   }
@@ -40,26 +28,17 @@ declare global {
 export { ApplicationContract, ApplicationInstance } from "./Application";
 export { CertificateContract, CertificateInstance } from "./Certificate";
 export {
-  CertificateManagerContract,
-  CertificateManagerInstance
-} from "./CertificateManager";
-export { CertificatesContract, CertificatesInstance } from "./Certificates";
-export {
   CertificatesManagerContract,
   CertificatesManagerInstance
 } from "./CertificatesManager";
-export { FacultiesContract, FacultiesInstance } from "./Faculties";
 export {
   FacultiesManagerContract,
   FacultiesManagerInstance
 } from "./FacultiesManager";
 export { FacultyContract, FacultyInstance } from "./Faculty";
-export { InboxContract, InboxInstance } from "./Inbox";
 export {
   InstituionsManagerContract,
   InstituionsManagerInstance
 } from "./InstituionsManager";
 export { InstitutionContract, InstitutionInstance } from "./Institution";
-export { InstitutionsContract, InstitutionsInstance } from "./Institutions";
-export { InsututionsContract, InsututionsInstance } from "./Insututions";
 export { MigrationsContract, MigrationsInstance } from "./Migrations";

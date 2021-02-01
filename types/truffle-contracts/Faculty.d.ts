@@ -44,20 +44,19 @@ export interface FacultyInstance extends Truffle.ContractInstance {
   };
 
   assignInstitution: {
-    (
-      _institutionAddress: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<Truffle.TransactionResponse<AllEvents>>;
+    (_institution: string, txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse<AllEvents>
+    >;
     call(
-      _institutionAddress: string,
+      _institution: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<void>;
     sendTransaction(
-      _institutionAddress: string,
+      _institution: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
-      _institutionAddress: string,
+      _institution: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };
@@ -137,20 +136,19 @@ export interface FacultyInstance extends Truffle.ContractInstance {
     };
 
     assignInstitution: {
-      (
-        _institutionAddress: string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<Truffle.TransactionResponse<AllEvents>>;
+      (_institution: string, txDetails?: Truffle.TransactionDetails): Promise<
+        Truffle.TransactionResponse<AllEvents>
+      >;
       call(
-        _institutionAddress: string,
+        _institution: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<void>;
       sendTransaction(
-        _institutionAddress: string,
+        _institution: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
-        _institutionAddress: string,
+        _institution: string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<number>;
     };

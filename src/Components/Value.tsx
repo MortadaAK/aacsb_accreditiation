@@ -39,6 +39,8 @@ function Value<T>({
             } else {
               setRestult(result);
             }
+          } else {
+            setRestult(undefined);
           }
         }
         setLoading(false);

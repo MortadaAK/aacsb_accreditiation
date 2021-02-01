@@ -192,6 +192,49 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
     txDetails?: Truffle.TransactionDetails
   ): Promise<string[]>;
 
+  listFaculties(
+    _from: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<string[]>;
+
+  facultiesLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+  addFaculty: {
+    (_faculty: string, txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse<AllEvents>
+    >;
+    call(
+      _faculty: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<void>;
+    sendTransaction(
+      _faculty: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      _faculty: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  removeFaculty: {
+    (_faculty: string, txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse<AllEvents>
+    >;
+    call(
+      _faculty: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<void>;
+    sendTransaction(
+      _faculty: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      _faculty: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
   methods: {
     allowedModifiers(
       arg0: number | BN | string,
@@ -374,6 +417,49 @@ export interface InstitutionInstance extends Truffle.ContractInstance {
       _from: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string[]>;
+
+    listFaculties(
+      _from: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string[]>;
+
+    facultiesLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+    addFaculty: {
+      (_faculty: string, txDetails?: Truffle.TransactionDetails): Promise<
+        Truffle.TransactionResponse<AllEvents>
+      >;
+      call(
+        _faculty: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<void>;
+      sendTransaction(
+        _faculty: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<string>;
+      estimateGas(
+        _faculty: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<number>;
+    };
+
+    removeFaculty: {
+      (_faculty: string, txDetails?: Truffle.TransactionDetails): Promise<
+        Truffle.TransactionResponse<AllEvents>
+      >;
+      call(
+        _faculty: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<void>;
+      sendTransaction(
+        _faculty: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<string>;
+      estimateGas(
+        _faculty: string,
+        txDetails?: Truffle.TransactionDetails
+      ): Promise<number>;
+    };
   };
 
   getPastEvents(event: string): Promise<EventData[]>;
