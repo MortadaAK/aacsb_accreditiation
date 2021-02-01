@@ -92,6 +92,11 @@ export interface FacultyInstance extends Truffle.ContractInstance {
 
   certificatesLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
 
+  listCertificates(
+    _from: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<string[]>;
+
   pendingCertificatesLength(
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
@@ -179,6 +184,11 @@ export interface FacultyInstance extends Truffle.ContractInstance {
     };
 
     certificatesLength(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
+    listCertificates(
+      _from: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string[]>;
 
     pendingCertificatesLength(
       txDetails?: Truffle.TransactionDetails

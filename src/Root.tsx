@@ -18,6 +18,13 @@ const theme = createMuiTheme({
       main: "#00b0ff",
     },
   },
+  overrides: {
+    MuiBadge: {
+      anchorOriginTopRightRectangle: {
+        right: -5,
+      },
+    },
+  },
 });
 const Root = () => {
   const classes = useStyles();

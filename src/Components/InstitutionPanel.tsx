@@ -41,6 +41,7 @@ const Form = ({
         >
           <DialogContent dividers>
             <TextField
+              fullWidth
               label="Name"
               value={name}
               onChange={({ target: { value } }) => {

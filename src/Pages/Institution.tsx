@@ -127,6 +127,7 @@ const AuthorizedAddresses = ({
         >
           <DialogContent dividers>
             <TextField
+              fullWidth
               label="Address"
               value={address}
               onChange={({ target: { value } }) => {
@@ -218,6 +219,7 @@ const StaffMembers = ({
         >
           <DialogContent dividers>
             <TextField
+              fullWidth
               label="Name"
               value={name}
               onChange={({ target: { value } }) => {

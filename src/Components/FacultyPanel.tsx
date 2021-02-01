@@ -16,6 +16,7 @@ import { Grid, TextField } from "@material-ui/core";
 import { FacultyInstance } from "../../types/truffle-contracts";
 import { Degree, DegreeSelect } from "../Degree";
 import InstitutionSelect, { InstitutionRecord } from "./InstitutionSelect";
+import { Link as RouterLink } from "react-router-dom";
 const useStyles = makeStyles((theme) => ({
   root: {
     maxWidth: 345,
@@ -75,36 +76,51 @@ const Panel = ({ address }: { address: string }) => {
                 }
               />
               <CardContent>
-                <Typography
-                  variant="body2"
-                  color="textSecondary"
-                  component="div"
-                >
-                  <Value value={faculty.currentInstitution}>
-                    {(address) => (
-                      <Value
-                        value={
-                          address ? () => getInstition(address) : undefined
-                        }
-                      >
-                        {(instition) => (
-                          <Value value={instition?.name}>
-                            {(name) => {
-                              return <>Institution: {name}</>;
-                            }}
-                          </Value>
-                        )}
-                      </Value>
-                    )}
-                  </Value>
-                </Typography>
+                <Value value={faculty.currentInstitution}>
+                  {(address) => (
+                    <Value
+                      value={address ? () => getInstition(address) : undefined}
+                    >
+                      {(instition) => (
+                        <Value value={instition?.name}>
+                          {(name) => {
+                            return (
+                              <Typography variant="body2" color="textSecondary">
+                                Institution: {name}
+                              </Typography>
+                            );
+                          }}
+                        </Value>
+                      )}
+                    </Value>
+                  )}
+                </Value>
               </CardContent>
               <Value value={faculty.allowed} params={[account]}>
                 {(allowed) =>
                   allowed ? (
                     <CardActions disableSpacing>
-                      <Form name={name} title="Edit" action={faculty.update} />
-                      <RequestCertificate faculty={faculty} />
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <Form
+                            name={name}
+                            title="Edit"
+                            action={faculty.update}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <RequestCertificate faculty={faculty} />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Button
+                            variant="contained"
+                            component={RouterLink}
+                            to={`/faculties/${faculty.address}`}
+                          >
+                            Profile
+                          </Button>
+                        </Grid>
+                      </Grid>
                     </CardActions>
                   ) : null
                 }
@@ -221,6 +237,7 @@ const Form = ({
         >
           <DialogContent dividers>
             <TextField
+              fullWidth
               label="Name"
               value={name}
               onChange={({ target: { value } }) => {

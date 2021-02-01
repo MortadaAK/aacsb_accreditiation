@@ -26,25 +26,6 @@ export interface CertificateInstance extends Truffle.ContractInstance {
 
   status(txDetails?: Truffle.TransactionDetails): Promise<BN>;
 
-  update: {
-    (
-      _degree: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<Truffle.TransactionResponse<AllEvents>>;
-    call(
-      _degree: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<void>;
-    sendTransaction(
-      _degree: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      _degree: number | BN | string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
   reject: {
     (txDetails?: Truffle.TransactionDetails): Promise<
       Truffle.TransactionResponse<AllEvents>
@@ -76,25 +57,6 @@ export interface CertificateInstance extends Truffle.ContractInstance {
     institution(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
     status(txDetails?: Truffle.TransactionDetails): Promise<BN>;
-
-    update: {
-      (
-        _degree: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<Truffle.TransactionResponse<AllEvents>>;
-      call(
-        _degree: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<void>;
-      sendTransaction(
-        _degree: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<string>;
-      estimateGas(
-        _degree: number | BN | string,
-        txDetails?: Truffle.TransactionDetails
-      ): Promise<number>;
-    };
 
     reject: {
       (txDetails?: Truffle.TransactionDetails): Promise<

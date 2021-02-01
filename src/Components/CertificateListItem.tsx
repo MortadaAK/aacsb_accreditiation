@@ -1,8 +1,11 @@
 import {
   Button,
-  List,
+  CardActions,
+  CardContent,
+  Chip,
+  Card,
   ListItem,
-  ListItemSecondaryAction,
+  makeStyles,
   ListItemText,
   Typography,
 } from "@material-ui/core";
@@ -13,12 +16,22 @@ import { display as displayDegree } from "../Degree";
 import CertificateStatus, {
   display as displayStatus,
 } from "../CertificateStatus";
+const useStyles = makeStyles({
+  root: {
+    width: "100%",
+  },
+  content: {
+    position: "relative",
+  },
+  badge: { position: "absolute", top: 5, right: 5 },
+});
 
 const CertificateListItem = ({
   certificateAddress,
 }: {
   certificateAddress: string;
 }) => {
+  const classes = useStyles();
   const { faculty, institution, account, certificate } = useStore((state) => ({
     faculty: state.faculty,
     institution: state.institution,
@@ -60,75 +73,74 @@ const CertificateListItem = ({
           </Value>
         );
         return (
-          <>
-            <ListItemText>
-              <List component="div">
-                <ListItem component="div">
-                  <ListItemText
-                    primaryTypographyProps={{ component: "div" }}
-                    secondaryTypographyProps={{ component: "div" }}
-                    primary={facultyName}
-                    secondary={institutionName}
-                  />
-                </ListItem>
-                <ListItem component="div">
-                  <ListItemText
-                    primaryTypographyProps={{ component: "div" }}
-                    primary={
-                      <Value value={certificate.degree}>
-                        {(result) => (
-                          <Typography>{displayDegree(result)}</Typography>
-                        )}
-                      </Value>
-                    }
-                  />
-                </ListItem>
-                <ListItem component="div">
-                  <ListItemText
-                    primaryTypographyProps={{ component: "div" }}
-                    primary={
-                      <Value value={certificate.status}>
-                        {(result) => (
-                          <Typography>{displayStatus(result)}</Typography>
-                        )}
-                      </Value>
-                    }
-                  />
-                </ListItem>
-              </List>
-            </ListItemText>
-            <Value value={certificate.editable} params={[account]}>
-              {(editable) =>
-                editable ? (
-                  <Value value={certificate.status}>
-                    {(status) =>
-                      status?.toNumber() === CertificateStatus.requested ? (
-                        <ListItemSecondaryAction>
-                          <Button
-                            onClick={async () => {
-                              await certificate.approve({ from: account });
-                            }}
-                            variant="contained"
-                            color="primary"
-                          >
-                            Accept
-                          </Button>
-                          <Button
-                            onClick={async () => {
-                              await certificate.reject({ from: account });
-                            }}
-                            variant="contained"
-                          >
-                            Reject
-                          </Button>
-                        </ListItemSecondaryAction>
-                      ) : null
-                    }
-                  </Value>
-                ) : null
-              }
-            </Value>
-          </>
+          <Card className={classes.root}>
+            <CardContent component="div" className={classes.content}>
+              <ListItem component="div">
+                <ListItemText
+                  primaryTypographyProps={{ component: "div" }}
+                  secondaryTypographyProps={{ component: "div" }}
+                  primary={facultyName}
+                  secondary={institutionName}
+                />
+              </ListItem>
+              <ListItem component="div">
+                <ListItemText
+                  primaryTypographyProps={{ component: "div" }}
+                  primary={
+                    <Value value={certificate.degree}>
+                      {(result) => (
+                        <Typography>{displayDegree(result)}</Typography>
+                      )}
+                    </Value>
+                  }
+                />
+              </ListItem>
+              <div className={classes.badge}>
+                <Value value={certificate.status}>
+                  {(result) => <Chip label={displayStatus(result)} />}
+                </Value>
+              </div>
+            </CardContent>
+            <CardActions>
+              <Value value={certificate.status}>
+                {(status) =>
+                  status?.toNumber() === CertificateStatus.requested ? (
+                    <Value value={certificate.editable} params={[account]}>
+                      {(editable) =>
+                        editable ? (
+                          <>
+                            <Button
+                              size="small"
+                              onClick={async () => {
+                                await certificate.approve({
+                                  from: account,
+                                });
+                              }}
+                              variant="contained"
+                              color="primary"
+                            >
+                              Accept
+                            </Button>
+                            <Button
+                              size="small"
+                              onClick={async () => {
+                                await certificate.reject({
+                                  from: account,
+                                });
+                              }}
+                              variant="contained"
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        ) : null
+                      }
+                    </Value>
+                  ) : null
+                }
+              </Value>
+            </CardActions>
+          </Card>
         );
       }}
     </Value>

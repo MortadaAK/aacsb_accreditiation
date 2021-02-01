@@ -29,17 +29,6 @@ contract Certificate {
         degree = _degree;
     }
 
-    function update(Degree _degree) public payable {
-        if (editable(msg.sender)) {
-            degree = _degree;
-            certificatesManager.application().emitEvent(
-                "UPDATE_CERTIFICATE",
-                "CERTIFICATE",
-                address(this)
-            );
-        }
-    }
-
     function reject() public payable {
         if (editable(msg.sender)) {
             status = State.rejected;
@@ -73,8 +62,7 @@ contract Certificate {
     }
 
     function editable(address _address) public view returns (bool) {
-        return ((status == State.requested &&
-            (institution.allowed(_address))) || faculty.allowed(_address));
+        return status == State.requested && institution.allowed(_address);
     }
 }
 
@@ -140,6 +128,18 @@ contract Faculty {
 
     function certificatesLength() public view returns (uint256) {
         return certificates.length;
+    }
+
+    function listCertificates(uint256 _from)
+        public
+        view
+        returns (Certificate[10] memory)
+    {
+        Certificate[10] memory list;
+        for (uint256 i = 0; i < 10 && i + _from < certificates.length; i++) {
+            list[i] = certificates[i + _from];
+        }
+        return list;
     }
 
     function pendingCertificatesLength() public view returns (uint256) {
@@ -219,10 +219,8 @@ contract Institution {
         returns (StaffMember[10] memory)
     {
         StaffMember[10] memory list;
-        for (uint256 i = 0; i < 10; i++) {
-            if (nextStaffMembersId < i + _from + 1) {
-                i = 10;
-            } else if (skipInactive && !staffMembers[i + _from + 1].active) {
+        for (uint256 i = 0; i < 10 && nextStaffMembersId < i + _from + 1; i++) {
+            if (skipInactive && !staffMembers[i + _from + 1].active) {
                 _from++;
                 i--;
             } else {
@@ -274,12 +272,12 @@ contract Institution {
         returns (address[10] memory)
     {
         address[10] memory list;
-        for (uint256 i = 0; i < 10; i++) {
-            if (i + _from >= allowedModifiers.length) {
-                i = 10;
-            } else {
-                list[i] = allowedModifiers[i + _from];
-            }
+        for (
+            uint256 i = 0;
+            i < 10 && i + _from < allowedModifiers.length;
+            i++
+        ) {
+            list[i] = allowedModifiers[i + _from];
         }
         return list;
     }
