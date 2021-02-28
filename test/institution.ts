@@ -4,18 +4,23 @@ const Application = artifacts.require("Application");
 const Faculty = artifacts.require("Faculty");
 const Institution = artifacts.require("Institution");
 const Certificate = artifacts.require("Certificate");
+const InstituionsManager = artifacts.require("InstituionsManager");
 const EMPTY = "0x0000000000000000000000000000000000000000";
 
 contract("Institution", async (accounts) => {
   let instance;
   let institution;
+  let instituionsManager;
 
   beforeEach(async () => {
     instance = await Application.new();
-    await instance.createInstitution("PMU", {
+    instituionsManager = await InstituionsManager.at(
+      await instance.instituionsManager()
+    );
+    await instituionsManager.createInstitution("PMU", {
       from: accounts[0],
     });
-    let address = await instance.institutions(0);
+    let address = await instituionsManager.institutions(0);
     institution = await Institution.at(address);
   });
 

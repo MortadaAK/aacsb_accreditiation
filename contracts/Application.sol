@@ -45,7 +45,7 @@ contract Certificate {
     }
 
     function approve() public payable {
-        if (editable(msg.sender) && institution.allowed(msg.sender)) {
+        if (editable(msg.sender)) {
             status = State.approved;
             faculty.addCertificate(this, msg.sender);
             institution.addCertificate(this, msg.sender);
@@ -154,7 +154,7 @@ contract Faculty {
             facultiesManager
                 .application()
                 .certificatesManager()
-                .pendingCertificateLengthForFaculty(this);
+                .pendingCertificatesLengthForFaculty(this);
     }
 
     function pendingCertificates(uint256 _from)
@@ -166,7 +166,7 @@ contract Faculty {
             facultiesManager
                 .application()
                 .certificatesManager()
-                .pendingCertificateForFaculty(this, _from);
+                .pendingCertificatesForFaculty(this, _from);
     }
 }
 
@@ -226,13 +226,18 @@ contract Institution {
         returns (StaffMember[10] memory)
     {
         StaffMember[10] memory list;
-        for (uint256 i = 0; i < 10 && nextStaffMembersId < i + _from + 1; i++) {
-            if (skipInactive && !staffMembers[i + _from + 1].active) {
-                _from++;
-                i--;
-            } else {
-                list[i] = staffMembers[i + _from + 1];
+        uint256 _count = 0;
+        uint256 _list_index = 0;
+        uint256 _i = 0;
+        while (_i < nextStaffMembersId && _count < 10) {
+            if (staffMembers[_i + 1].active || !skipInactive) {
+                if (_count >= _from) {
+                    list[_list_index] = staffMembers[_i + 1];
+                    _list_index++;
+                }
+                _count++;
             }
+            _i++;
         }
         return list;
     }
@@ -402,7 +407,7 @@ contract Institution {
             instituionsManager
                 .application()
                 .certificatesManager()
-                .pendingCertificateLengthForInstitution(this);
+                .pendingCertificatesLengthForInstitution(this);
     }
 
     function pendingCertificates(uint256 _from)
@@ -414,7 +419,7 @@ contract Institution {
             instituionsManager
                 .application()
                 .certificatesManager()
-                .pendingCertificateForInstitution(this, _from);
+                .pendingCertificatesForInstitution(this, _from);
     }
 
     function listFaculties(uint256 _from)
@@ -522,7 +527,7 @@ contract CertificatesManager {
         );
     }
 
-    function pendingCertificateLengthForFaculty(Faculty _faculty)
+    function pendingCertificatesLengthForFaculty(Faculty _faculty)
         public
         view
         returns (uint256)
@@ -536,7 +541,7 @@ contract CertificatesManager {
         return _count;
     }
 
-    function pendingCertificateForFaculty(Faculty _faculty, uint256 _from)
+    function pendingCertificatesForFaculty(Faculty _faculty, uint256 _from)
         public
         view
         returns (Certificate[10] memory)
@@ -546,21 +551,22 @@ contract CertificatesManager {
         uint256 _toSkip = 0;
         for (
             uint256 i = 0;
-            i < pendingCertificates.length && _count <= 10;
+            i < pendingCertificates.length && _count < 10;
             i++
         ) {
             if (pendingCertificates[i].faculty() == _faculty) {
                 if (_toSkip >= _from) {
                     _list[_count] = pendingCertificates[i];
                     _count++;
+                } else {
+                    _toSkip++;
                 }
-                _toSkip++;
             }
         }
         return _list;
     }
 
-    function pendingCertificateLengthForInstitution(Institution _institution)
+    function pendingCertificatesLengthForInstitution(Institution _institution)
         public
         view
         returns (uint256)
@@ -574,7 +580,7 @@ contract CertificatesManager {
         return _count;
     }
 
-    function pendingCertificateForInstitution(
+    function pendingCertificatesForInstitution(
         Institution _institution,
         uint256 _from
     ) public view returns (Certificate[10] memory) {
@@ -583,15 +589,16 @@ contract CertificatesManager {
         uint256 _toSkip = 0;
         for (
             uint256 i = 0;
-            i < pendingCertificates.length && _count <= 10;
+            i < pendingCertificates.length && _count < 10;
             i++
         ) {
             if (pendingCertificates[i].institution() == _institution) {
                 if (_toSkip >= _from) {
                     _list[_count] = pendingCertificates[i];
                     _count++;
+                } else {
+                    _toSkip++;
                 }
-                _toSkip++;
             }
         }
         return _list;

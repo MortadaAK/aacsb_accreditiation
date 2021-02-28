@@ -110,41 +110,96 @@ contract("Application", async (accounts) => {
     const [institution] = await instituionsManager.listInstitutions(0);
     assert.equal(
       0,
-      await certificatesManager.pendingCertificateLengthForFaculty(faculty)
+      await certificatesManager.pendingCertificatesLengthForFaculty(faculty)
     );
     await certificatesManager.requestCertificate(faculty, institution, 0, from);
     assert.equal(
       1,
-      await certificatesManager.pendingCertificateLengthForFaculty(faculty)
+      await certificatesManager.pendingCertificatesLengthForFaculty(faculty)
     );
   });
   it("returns pending certificates for a faculty", async () => {
     const from = { from: accounts[0] };
     await facultiesManager.createFaculty("Mohammad", from);
     await instituionsManager.createInstitution("PMU", from);
-    const [faculty] = await facultiesManager.listFaculties(0);
+    const [facultyAddress] = await facultiesManager.listFaculties(0);
     const [institution] = await instituionsManager.listInstitutions(0);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    let certificates = await certificatesManager.pendingCertificateForFaculty(
-      faculty,
-      0
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
     );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    await certificatesManager.requestCertificate(
+      facultyAddress,
+      institution,
+      0,
+      from
+    );
+    const faculty = await Faculty.at(facultyAddress);
+    let certificates = await faculty.pendingCertificates(0);
     assert(certificates.filter((c) => c !== EMPTY).length, 10);
-    certificates = await certificatesManager.pendingCertificateForFaculty(
-      faculty,
-      10
-    );
+    certificates = await faculty.pendingCertificates(10);
     assert(certificates.filter((c) => c !== EMPTY).length, 2);
   });
   it("returns pending certificates length for an institution", async () => {
@@ -152,20 +207,16 @@ contract("Application", async (accounts) => {
     await facultiesManager.createFaculty("Mohammad", from);
     await instituionsManager.createInstitution("PMU", from);
     const [faculty] = await facultiesManager.listFaculties(0);
-    const [institution] = await instituionsManager.listInstitutions(0);
-    assert.equal(
+    const [institutionAddress] = await instituionsManager.listInstitutions(0);
+    const institution = await Institution.at(institutionAddress);
+    assert.equal(0, await institution.pendingCertificatesLength());
+    await certificatesManager.requestCertificate(
+      faculty,
+      institutionAddress,
       0,
-      await certificatesManager.pendingCertificateLengthForInstitution(
-        institution
-      )
+      from
     );
-    await certificatesManager.requestCertificate(faculty, institution, 0, from);
-    assert.equal(
-      1,
-      await certificatesManager.pendingCertificateLengthForInstitution(
-        institution
-      )
-    );
+    assert.equal(1, await institution.pendingCertificatesLength());
   });
   it("returns pending certificates for a institution", async () => {
     const from = { from: accounts[0] };
@@ -250,17 +301,10 @@ contract("Application", async (accounts) => {
       0,
       from
     );
-    console.log(institution);
-    let certificates = await certificatesManager.pendingCertificateForInstitution(
-      institution,
-      0
-    );
+    const institutionRecord = await Institution.at(institution);
+    let certificates = await institutionRecord.pendingCertificates(0);
     assert(certificates.filter((c) => c !== EMPTY).length, 10);
-    console.log(institution);
-    certificates = await certificatesManager.pendingCertificateForInstitution(
-      institution,
-      10
-    );
+    certificates = await institutionRecord.pendingCertificates(1);
     assert(certificates.filter((c) => c !== EMPTY).length, 2);
   });
 });

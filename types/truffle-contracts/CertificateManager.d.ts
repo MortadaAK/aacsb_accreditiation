@@ -62,23 +62,23 @@ export interface CertificateManagerInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
-  pendingCertificateLengthForFaculty(
+  pendingCertificatesLengthForFaculty(
     _faculty: string,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
 
-  pendingCertificateForFaculty(
+  pendingCertificatesForFaculty(
     _faculty: string,
     _from: number | BN | string,
     txDetails?: Truffle.TransactionDetails
   ): Promise<string[]>;
 
-  pendingCertificateLengthForInstitution(
+  pendingCertificatesLengthForInstitution(
     _institution: string,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
 
-  pendingCertificateForInstitution(
+  pendingCertificatesForInstitution(
     _institution: string,
     _from: number | BN | string,
     txDetails?: Truffle.TransactionDetails
@@ -132,23 +132,23 @@ export interface CertificateManagerInstance extends Truffle.ContractInstance {
       ): Promise<number>;
     };
 
-    pendingCertificateLengthForFaculty(
+    pendingCertificatesLengthForFaculty(
       _faculty: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<BN>;
 
-    pendingCertificateForFaculty(
+    pendingCertificatesForFaculty(
       _faculty: string,
       _from: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string[]>;
 
-    pendingCertificateLengthForInstitution(
+    pendingCertificatesLengthForInstitution(
       _institution: string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<BN>;
 
-    pendingCertificateForInstitution(
+    pendingCertificatesForInstitution(
       _institution: string,
       _from: number | BN | string,
       txDetails?: Truffle.TransactionDetails

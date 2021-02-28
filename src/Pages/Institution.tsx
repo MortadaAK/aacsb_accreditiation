@@ -204,7 +204,7 @@ const StaffMembers = ({
         caller={institution.listStaffMembers}
         length={institution.staffMembersLength}
         contractBuilder={DepartmentBuilder}
-        additionalParams={[false]}
+        additionalParams={[true]}
         topic={`INSTITUTION|${institution.address}`}
       >
         {(department) => (
