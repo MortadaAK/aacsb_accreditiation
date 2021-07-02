@@ -9,6 +9,11 @@ import {
   IconButton,
   ListItemSecondaryAction,
   ListItemText,
+  Table,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableBody,
   TextField,
   Toolbar,
   Tooltip,
@@ -498,6 +503,292 @@ const IssuedCertificates = ({
     return null;
   }
 };
+const IssuedCertificateReport = ({
+  institution,
+}: {
+  institution: InstitutionInstance;
+}) => {
+  const { application } = useStore((state) => ({
+    application: state.application,
+  }));
+  if (application) {
+    return (
+      <>
+        <AppBar position="relative" color="secondary">
+          <Toolbar>
+            <Typography>Issued Certificates Summary</Typography>
+          </Toolbar>
+        </AppBar>
+        <Value
+          topic={`INSTITUTION|${institution.address}`}
+          value={institution.countIssuesCertificateByDegree}
+          params={[Degree.InstructionalPractitioner]}
+        >
+          {(instructionalPractitioner) => (
+            <Value
+              topic={`INSTITUTION|${institution.address}`}
+              value={institution.countIssuesCertificateByDegree}
+              params={[Degree.PracticeAcademics]}
+            >
+              {(practiceAcademics) => (
+                <Value
+                  topic={`INSTITUTION|${institution.address}`}
+                  value={institution.countIssuesCertificateByDegree}
+                  params={[Degree.ScholarlyAcademics]}
+                >
+                  {(scholarlyAcademics) => (
+                    <Value
+                      topic={`INSTITUTION|${institution.address}`}
+                      value={institution.countIssuesCertificateByDegree}
+                      params={[Degree.ScholarlyPractitioner]}
+                    >
+                      {(scholarlyPractitioner) => (
+                        <Value
+                          topic={`INSTITUTION|${institution.address}`}
+                          value={institution.staffMembersLength}
+                        >
+                          {(staffMembers) => {
+                            const toNumber = (value: BN | null | undefined) =>
+                              value?.toNumber() || 0;
+                            const total =
+                              (toNumber(instructionalPractitioner) +
+                                toNumber(practiceAcademics) +
+                                toNumber(scholarlyAcademics) +
+                                toNumber(scholarlyPractitioner) +
+                                toNumber(staffMembers)) /
+                                100.0 || 1e-7;
+                            return (
+                              <Table>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>Type</TableCell>
+                                    <TableCell>Count</TableCell>
+                                    <TableCell colSpan={2}>%</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  <TableRow>
+                                    <TableCell>Scholarly Academics</TableCell>
+                                    <TableCell>
+                                      {toNumber(scholarlyAcademics)}
+                                    </TableCell>
+                                    <TableCell>
+                                      {(
+                                        toNumber(scholarlyAcademics) / total
+                                      ).toFixed(2)}
+                                      %
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell>Practice Academics</TableCell>
+                                    <TableCell>
+                                      {toNumber(practiceAcademics)}
+                                    </TableCell>
+                                    <TableCell>
+                                      {(
+                                        toNumber(practiceAcademics) / total
+                                      ).toFixed(2)}
+                                      %
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell>
+                                      Instructional Practitioner
+                                    </TableCell>
+                                    <TableCell>
+                                      {toNumber(instructionalPractitioner)}
+                                    </TableCell>
+                                    <TableCell>
+                                      {(
+                                        toNumber(instructionalPractitioner) /
+                                        total
+                                      ).toFixed(2)}
+                                      %
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell>
+                                      Scholarly Practitioner
+                                    </TableCell>
+                                    <TableCell>
+                                      {toNumber(scholarlyPractitioner)}
+                                    </TableCell>
+
+                                    <TableCell>
+                                      {(
+                                        toNumber(scholarlyPractitioner) / total
+                                      ).toFixed(2)}
+                                      %
+                                    </TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
+                            );
+                          }}
+                        </Value>
+                      )}
+                    </Value>
+                  )}
+                </Value>
+              )}
+            </Value>
+          )}
+        </Value>
+      </>
+    );
+  } else {
+    return null;
+  }
+};
+const FacultiesCertificateReport = ({
+  institution,
+}: {
+  institution: InstitutionInstance;
+}) => {
+  const { application } = useStore((state) => ({
+    application: state.application,
+  }));
+  if (application) {
+    return (
+      <>
+        <AppBar position="relative" color="secondary">
+          <Toolbar>
+            <Typography>Faculties/Staff Members Summary</Typography>
+          </Toolbar>
+        </AppBar>
+        <Value
+          topic={`INSTITUTION|${institution.address}`}
+          value={institution.countFacultiesCertificateByDegree}
+          params={[Degree.InstructionalPractitioner]}
+        >
+          {(instructionalPractitioner) => (
+            <Value
+              topic={`INSTITUTION|${institution.address}`}
+              value={institution.countFacultiesCertificateByDegree}
+              params={[Degree.PracticeAcademics]}
+            >
+              {(practiceAcademics) => (
+                <Value
+                  topic={`INSTITUTION|${institution.address}`}
+                  value={institution.countFacultiesCertificateByDegree}
+                  params={[Degree.ScholarlyAcademics]}
+                >
+                  {(scholarlyAcademics) => (
+                    <Value
+                      topic={`INSTITUTION|${institution.address}`}
+                      value={institution.countFacultiesCertificateByDegree}
+                      params={[Degree.ScholarlyPractitioner]}
+                    >
+                      {(scholarlyPractitioner) => (
+                        <Value
+                          topic={`INSTITUTION|${institution.address}`}
+                          value={institution.staffMembersLength}
+                        >
+                          {(staffMembers) => {
+                            const toNumber = (value: BN | null | undefined) =>
+                              value?.toNumber() || 0;
+                            const total =
+                              (toNumber(instructionalPractitioner) +
+                                toNumber(practiceAcademics) +
+                                toNumber(scholarlyAcademics) +
+                                toNumber(scholarlyPractitioner) +
+                                toNumber(staffMembers)) /
+                                100.0 || 1e-7;
+                            return (
+                              <Table>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>Type</TableCell>
+                                    <TableCell>Count</TableCell>
+                                    <TableCell colSpan={2}>%</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  <TableRow>
+                                    <TableCell>Scholarly Academics</TableCell>
+                                    <TableCell>
+                                      {toNumber(scholarlyAcademics)}
+                                    </TableCell>
+                                    <TableCell rowSpan={2}>
+                                      {(
+                                        (toNumber(scholarlyAcademics) +
+                                          toNumber(practiceAcademics)) /
+                                        total
+                                      ).toFixed(2)}
+                                      %
+                                    </TableCell>
+                                    <TableCell rowSpan={4}>
+                                      {(
+                                        (toNumber(scholarlyAcademics) +
+                                          toNumber(practiceAcademics) +
+                                          toNumber(instructionalPractitioner) +
+                                          toNumber(scholarlyPractitioner)) /
+                                        total
+                                      ).toFixed(2)}
+                                      %
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell>Practice Academics</TableCell>
+                                    <TableCell>
+                                      {toNumber(practiceAcademics)}
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell>
+                                      Instructional Practitioner
+                                    </TableCell>
+                                    <TableCell>
+                                      {toNumber(instructionalPractitioner)}
+                                    </TableCell>
+                                    <TableCell rowSpan={2}>
+                                      {(
+                                        (toNumber(instructionalPractitioner) +
+                                          toNumber(scholarlyPractitioner)) /
+                                        total
+                                      ).toFixed(2)}
+                                      %
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell>
+                                      Scholarly Practitioner
+                                    </TableCell>
+                                    <TableCell>
+                                      {toNumber(scholarlyPractitioner)}
+                                    </TableCell>
+                                  </TableRow>
+                                  <TableRow>
+                                    <TableCell>Staff Members</TableCell>
+                                    <TableCell>
+                                      {toNumber(staffMembers)}
+                                    </TableCell>
+                                    <TableCell colSpan={2}>
+                                      {(toNumber(staffMembers) / total).toFixed(
+                                        2
+                                      )}
+                                      %
+                                    </TableCell>
+                                  </TableRow>
+                                </TableBody>
+                              </Table>
+                            );
+                          }}
+                        </Value>
+                      )}
+                    </Value>
+                  )}
+                </Value>
+              )}
+            </Value>
+          )}
+        </Value>
+      </>
+    );
+  } else {
+    return null;
+  }
+};
 const Institution = () => {
   const { address } = useParams<{ address: string }>();
   const institution = useStore((state) => state.institution);
@@ -510,10 +801,16 @@ const Institution = () => {
               <AppBar position="relative">
                 <Toolbar>
                   <Value value={institution.name}>
-                    {(name) => <Typography>{name}</Typography>}
+                    {(name) => <Typography>Instituion: {name}</Typography>}
                   </Value>
                 </Toolbar>
               </AppBar>
+            </Grid>
+            <Grid item xs={12}>
+              <FacultiesCertificateReport institution={institution} />
+            </Grid>
+            <Grid item xs={12}>
+              <IssuedCertificateReport institution={institution} />
             </Grid>
             <Grid item xs={12} md={6}>
               <Faculties institution={institution} />

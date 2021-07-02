@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity >=0.5.0 <0.8.4;
 pragma abicoder v2;
 enum Degree {
     ScholarlyAcademics,
@@ -84,6 +84,20 @@ contract Faculty {
         name = _name;
         id = _id;
         owner = _owner;
+    }
+
+    function countIssuesCertificateByDegree(Degree degree)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 count;
+        for (uint256 x = 0; x < certificates.length; x++) {
+            if (Certificate(certificates[x]).degree() == degree) {
+                count++;
+            }
+        }
+        return count;
     }
 
     function update(string memory _name) public payable {
@@ -204,6 +218,34 @@ contract Institution {
         owner = sender;
         allowedModifiers.push(sender);
         allowedModifiersMap[sender] = true;
+    }
+
+    function countIssuesCertificateByDegree(Degree degree)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 count;
+        for (uint256 x = 0; x < certificates.length; x++) {
+            if (Certificate(certificates[x]).degree() == degree) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    function countFacultiesCertificateByDegree(Degree degree)
+        public
+        view
+        returns (uint256)
+    {
+        uint256 _count;
+        for (uint256 x = 0; x < faculties.length; x++) {
+            _count += Faculty(faculties[x]).countIssuesCertificateByDegree(
+                degree
+            );
+        }
+        return _count;
     }
 
     function update(string memory _name) public payable {

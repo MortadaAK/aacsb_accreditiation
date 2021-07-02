@@ -101,7 +101,7 @@ const Faculty = () => {
               <AppBar position="relative">
                 <Toolbar>
                   <Value value={faculty.name}>
-                    {(name) => <Typography>{name}</Typography>}
+                    {(name) => <Typography>Faculty: {name}</Typography>}
                   </Value>
                   <div style={{ flex: 1 }}></div>
                   <Value

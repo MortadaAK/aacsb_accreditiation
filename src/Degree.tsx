@@ -31,13 +31,13 @@ export const DegreeSelect = ({
       value={value}
       fullWidth
       onChange={(_, degree) => {
-        degree && onChange(degree);
+        degree !== null && onChange(degree);
       }}
       options={[
-        Degree.InstructionalPractitioner,
-        Degree.PracticeAcademics,
         Degree.ScholarlyAcademics,
+        Degree.PracticeAcademics,
         Degree.ScholarlyPractitioner,
+        Degree.InstructionalPractitioner,
       ]}
       getOptionLabel={(option) =>
         ({
